@@ -161,7 +161,7 @@ h2{font-size:15px;font-weight:650;letter-spacing:.01em}
  <div id="homePetTabs" class="pet-tabs" role="tablist" aria-label="表示する個体"></div><div id="homePets" aria-live="polite"></div>
  <div class="card"><div class="row"><h2>📅 今日・これからの予定</h2><button class="btn ghost" onclick="show('calendar')">一覧 →</button></div><div id="upcoming"></div></div>
 </section>
-<section id="pets" class="screen"><div class="row"><h1>個体一覧</h1><button class="btn primary" onclick="openPetForm()">＋ 追加</button></div><div id="petList"></div></section>
+<section id="pets" class="screen"><div class="row"><h1>個体一覧</h1><button id="addPetButton" class="btn primary" onclick="openPetForm()">＋ 追加</button></div><div id="petList"></div></section>
 <section id="environment" class="screen"><div class="row"><div><h1>飼育環境</h1><div class="small">ケージ・保温器具・床材などの管理</div></div><button class="btn primary" onclick="openEnvironmentForm()">＋ 環境を編集</button></div><div id="environmentList"></div></section>
 <section id="records" class="screen"><h1>飼育記録</h1><div class="card"><label class="field">個体</label><select id="recordPetFilter" onchange="renderRecords()"></select><label class="field">記録の種類</label><select id="recordTypeFilter" onchange="renderRecords()"><option value="">すべて</option><option>測定</option><option value="給餌">ごはん</option><option>脱皮</option><option>排泄</option><option>温度</option><option>湿度</option><option>お掃除</option><option>健康・通院</option><option>その他</option></select></div><div id="recordList"></div></section>
 <section id="calendar" class="screen"><h1>カレンダー</h1><div class="card"><div class="calendar-legend"><span>🍽️ 給餌</span><span>🐍 脱皮</span><span>💩 排泄</span><span>⚖️ 測定</span><span>🌡️ 温湿度</span><span>🩺 健康</span><span>🎂 誕生日</span><span>🏠 お迎え記念日</span></div><div class="row"><button class="btn" onclick="changeMonth(-1)">‹</button><strong id="monthTitle"></strong><button class="btn" onclick="changeMonth(1)">›</button></div><div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px"></div></div></section>
@@ -204,12 +204,9 @@ function load(){
    };
   }
  }catch(e){console.error('REPTILE NOTE data load error',e)}
- if(!db.pets.length&&!localStorage.getItem(KEY)){
-  db.pets=[{id:crypto.randomUUID(),name:'ククルカン',species:'ボールパイソン',sex:'♀',arrival:'2026-11-14',birthday:'',morph:'',notes:'おくびょうな性格。ものおとに敏感。',photo:''}];
-  save();
- }
+ // 初回起動時は空のノートで開始します。既存のlocalStorageデータはそのまま読み込みます。
 }
-function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function save(){if(!sessionStorage.getItem('reptileNoteGuestSessionToken'))localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===id));renderAll()}
 function closeDialog(id){$(id).close()}
 function openSettings(){$('settingsDialog').showModal()}
@@ -221,7 +218,7 @@ function openSettingDetail(kind){
  if(kind==='notifications')html=`<div class="card"><p>誕生日やお迎え記念日などのお知らせを管理します。</p><button class="btn primary full" onclick="enableNotifications()">通知の許可を確認する</button><p class="small">通知は対応ブラウザでアプリを開いた際に予定を確認する方式です。アプリを閉じている間の通知は今後対応予定です。</p><p>現在の許可状態：<b>${('Notification' in window)?Notification.permission:'このブラウザは非対応'}</b></p></div>`;
  if(kind==='data')html=`<div class="notice">データはこのブラウザ内に保存されます。端末故障やブラウザのデータ消去に備えて、定期的にバックアップしてください。</div><button class="btn full" onclick="exportData()">⬇ データをバックアップ</button><label class="field" style="margin-top:14px">バックアップから復元</label><input type="file" id="importFile" accept="application/json"><button class="btn full" onclick="importData()">⬆ バックアップを復元</button><button class="btn danger full" style="margin-top:12px" onclick="clearData()">すべてのデータを削除</button>`;
  if(kind==='display')html=`<div class="card"><p>ライトモード（白）・ダークモードの切り替えは今後対応予定です。</p></div>`;
- if(kind==='participants')html=`<div class="notice">共有サーバーへの接続先はアプリに設定済みです。オーナーのセッショントークンを入力してください。トークンはこのタブを閉じるまで保持し、バックアップには含めません。</div><label class="field">オーナーのセッショントークン</label><input id="participantOwnerToken" type="password" autocomplete="off" placeholder="オーナー用のセッショントークン"><button class="btn primary full" onclick="loadParticipants()">参加者一覧を読み込む</button><div id="participantStatus" class="small" style="margin-top:10px"></div><div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px">🔗 共有リンクを発行</h3><label class="field">参加者の権限</label><select id="sharePermission"><option value="viewer">閲覧のみ</option><option value="editor">編集可能</option></select><label class="field">有効期限</label><select id="shareExpiry"><option value="7">7日間</option><option value="30" selected>30日間</option><option value="90">90日間</option><option value="365">1年間</option><option value="never">無期限</option></select><label class="field">利用回数上限</label><select id="shareMaxUses"><option value="1">1回</option><option value="5">5回</option><option value="10" selected>10回</option><option value="50">50回</option><option value="100">100回</option><option value="never">無制限</option></select><button class="btn primary full" onclick="createShareLink()">共有リンクを発行する</button><div id="shareLinkStatus" class="small" style="margin-top:9px"></div><div id="shareLinkResult"></div></div><div id="participantList"></div><button class="btn ghost full" style="margin-top:12px" onclick="clearParticipantToken()">このタブのトークンを消去</button>`;
+ if(kind==='participants')html=`<div class="notice">共有サーバーへの接続先はアプリに設定済みです。オーナーのセッショントークンを入力してください。トークンはこのタブを閉じるまで保持し、バックアップには含めません。</div><label class="field">オーナーのセッショントークン</label><input id="participantOwnerToken" type="password" autocomplete="off" placeholder="オーナー用のセッショントークン"><button class="btn primary full" onclick="loadParticipants()">参加者一覧を読み込む</button><div id="participantStatus" class="small" style="margin-top:10px"></div><button class="btn full" style="margin-top:8px" onclick="syncAllLocalPetsToCloud()">この端末の個体を共有サーバーへ同期</button><div id="cloudPetSyncStatus" class="small" style="margin-top:7px"></div><div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px">🔗 共有リンクを発行</h3><label class="field">参加者の権限</label><select id="sharePermission"><option value="viewer">閲覧のみ</option><option value="editor">編集可能</option></select><label class="field">有効期限</label><select id="shareExpiry"><option value="7">7日間</option><option value="30" selected>30日間</option><option value="90">90日間</option><option value="365">1年間</option><option value="never">無期限</option></select><label class="field">利用回数上限</label><select id="shareMaxUses"><option value="1">1回</option><option value="5">5回</option><option value="10" selected>10回</option><option value="50">50回</option><option value="100">100回</option><option value="never">無制限</option></select><button class="btn primary full" onclick="createShareLink()">共有リンクを発行する</button><div id="shareLinkStatus" class="small" style="margin-top:9px"></div><div id="shareLinkResult"></div></div><div id="participantList"></div><button class="btn ghost full" style="margin-top:12px" onclick="clearParticipantToken()">このタブのトークンを消去</button>`;
  $('settingDetailBody').innerHTML=html;if(kind==='participants')$('participantOwnerToken').value=sessionStorage.getItem('reptileNoteOwnerSessionToken')||'';closeDialog('settingsDialog');$('settingDetailDialog').showModal();
 }
 async function loadParticipants(){
@@ -304,13 +301,47 @@ async function joinSharedWorkspace(){
   sessionStorage.setItem('reptileNoteGuestDisplayName',displayName);
   pendingShareToken='';
   history.replaceState({},'',location.pathname);
-  status.textContent=`参加しました。${workspaceName} に ${displayName} として参加しています。`;
+  status.textContent=`参加しました。${workspaceName} に ${displayName} として参加しています。共有個体を読み込み中…`;
+  await loadSharedPetsFromCloud(false);
   button.textContent='参加しました';
   button.disabled=true;
   const note=document.createElement('p');note.className='notice';note.textContent='参加登録は完了しました。共有ノートの飼育データを表示・同期する機能は次の段階で接続します。';
   $('guestJoinDialog').appendChild(note);
   const close=document.createElement('button');close.className='btn full';close.textContent='閉じる';close.onclick=()=>closeGuestJoinDialog();$('guestJoinDialog').appendChild(close);
  }catch(error){status.textContent=`参加できませんでした：${error.message}`;button.disabled=false;}
+}
+function activeSharedToken(){return sessionStorage.getItem('reptileNoteGuestSessionToken')||sessionStorage.getItem('reptileNoteOwnerSessionToken')||''}
+function isSharedViewer(){return sessionStorage.getItem('reptileNoteGuestRole')==='viewer'}
+async function guestApi(payload){const response=await fetch(GUEST_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await response.json().catch(()=>({}));if(!response.ok||data.status!=='ok')throw new Error(data.error||data.message||`HTTP ${response.status}`);return data}
+async function syncPetToCloud(pet,quiet=false){
+ const token=activeSharedToken();if(!token)return {skipped:true};
+ if(isSharedViewer()){if(!quiet)alert('閲覧のみの共有ノートでは保存できません。');return {skipped:true};}
+ try{
+  const data=await guestApi({action:'save_pet',token,pet:{id:pet.id,name:pet.name,species:pet.species||'',sex:pet.sex||'',arrival:pet.arrival||'',birthday:pet.birthday||'',morph:pet.morph||'',notes:pet.notes||'',environment:pet.environment||{},photo:''}});
+  if(!quiet)alert('個体情報を共有サーバーに保存しました。');return data;
+ }catch(error){console.error('Cloud pet sync failed:',error);if(!quiet)alert(`共有サーバーへの保存に失敗しました。端末内のデータは保存されています。\n${error.message}`);return {error};}
+}
+async function loadSharedPetsFromCloud(showMessage=false){
+ const token=sessionStorage.getItem('reptileNoteGuestSessionToken')||sessionStorage.getItem('reptileNoteOwnerSessionToken')||'';
+ if(!token)return false;
+ try{
+  const data=await guestApi({action:'list_pets',token});
+  const rows=Array.isArray(data.pets)?data.pets:[];
+  const remote=rows.map(row=>{const d=row.data&&typeof row.data==='object'?row.data:{};return {id:row.id,name:row.name||'',species:row.species||'',sex:d.sex||'不明',arrival:d.arrival||'',birthday:d.birthday||'',morph:d.morph||'',notes:d.notes||'',photo:'',environment:d.environment||{}}});
+  // ゲスト参加中は共有ノートの個体一覧を表示。端末内の既存バックアップは上書きしない。
+  db.pets=remote;renderAll();
+  if(showMessage)alert(`${remote.length}件の個体情報を共有ノートから読み込みました。`);
+  return true;
+ }catch(error){console.error('Cloud pet load failed:',error);if(showMessage)alert(`共有ノートを読み込めませんでした。\n${error.message}`);return false;}
+}
+async function syncAllLocalPetsToCloud(){
+ const token=$('participantOwnerToken')?.value.trim()||sessionStorage.getItem('reptileNoteOwnerSessionToken')||'';
+ const status=$('cloudPetSyncStatus');if(!token){status.textContent='先にオーナーのセッショントークンを入力してください。';return;}
+ sessionStorage.setItem('reptileNoteOwnerSessionToken',token);
+ if(!db.pets.length){status.textContent='同期する個体はありません。';return;}
+ status.textContent='個体情報を同期中…';let ok=0,fail=0;
+ for(const pet of db.pets){const result=await syncPetToCloud(pet,true);if(result&&!result.error&&!result.skipped)ok++;else fail++;}
+ status.textContent=`同期完了：${ok}件成功${fail?`・${fail}件失敗`:''}。写真は別途対応予定です。`;
 }
 function clearParticipantToken(){sessionStorage.removeItem('reptileNoteOwnerSessionToken');if($('participantOwnerToken'))$('participantOwnerToken').value='';if($('participantStatus'))$('participantStatus').textContent='このタブのトークンを消去しました。';if($('participantList'))$('participantList').innerHTML='';}
 function editOwner(){const x=db.owner||{};$('ownerNickname').value=x.nickname||x.name||'';$('ownerAge').value=x.age||'';$('ownerGender').value=x.gender||'';$('ownerSns').value=x.sns||'';$('ownerEditDialog').showModal()}
@@ -322,9 +353,9 @@ function petOptions(select,includeAll=false){const previous=select.value;select.
 function openPetForm(id=''){const p=db.pets.find(x=>x.id===id)||{};$('petForm').reset();$('petId').value=p.id||'';['Name','Species','Sex','Arrival','Birthday','Morph','Notes'].forEach(k=>{$('pet'+k).value=p[{Name:'name',Species:'species',Sex:'sex',Arrival:'arrival',Birthday:'birthday',Morph:'morph',Notes:'notes'}[k]]|| (k==='Sex'?'不明':'')});selectedPhoto=p.photo||null;$('petPhotoPreview').hidden=!selectedPhoto;if(selectedPhoto)$('petPhotoPreview').src=selectedPhoto;$('petDialog').showModal()}
 $('petPhoto').onchange=async e=>{selectedPhoto=await readPhoto(e.target.files[0]);$('petPhotoPreview').hidden=!selectedPhoto;if(selectedPhoto)$('petPhotoPreview').src=selectedPhoto};
 function readPhoto(file){return new Promise((res,rej)=>{if(!file)return res(null);const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
-$('petForm').onsubmit=e=>{e.preventDefault();const id=$('petId').value||crypto.randomUUID();const old=db.pets.find(p=>p.id===id)||{};const p={id,name:$('petName').value.trim(),species:$('petSpecies').value,sex:$('petSex').value,arrival:$('petArrival').value,birthday:$('petBirthday').value,morph:$('petMorph').value,notes:$('petNotes').value,photo:selectedPhoto||old.photo||''};const i=db.pets.findIndex(x=>x.id===id);if(i<0)db.pets.push(p);else db.pets[i]=p;closeDialog('petDialog');save()};
+$('petForm').onsubmit=async e=>{e.preventDefault();if(isSharedViewer()){alert('この共有ノートは閲覧のみです。個体を変更できません。');return}const id=$('petId').value||crypto.randomUUID();const old=db.pets.find(p=>p.id===id)||{};const p={id,name:$('petName').value.trim(),species:$('petSpecies').value,sex:$('petSex').value,arrival:$('petArrival').value,birthday:$('petBirthday').value,morph:$('petMorph').value,notes:$('petNotes').value,photo:selectedPhoto||old.photo||'',environment:old.environment||{}};const i=db.pets.findIndex(x=>x.id===id);if(i<0)db.pets.push(p);else db.pets[i]=p;closeDialog('petDialog');save();await syncPetToCloud(p)};
 function openEnvironmentForm(petId=''){if(!db.pets.length){alert('先に個体を登録してください');return}const p=db.pets.find(x=>x.id===petId)||db.pets[0];const e=p.environment||{};$('envPetId').value=p.id;$('envPetName').textContent=p.name+' の飼育環境';const fields={Cage:'cage',CageMaterial:'cageMaterial',Heater:'heater',Thermostat:'thermostat',TargetTemp:'targetTemp',TargetHumidity:'targetHumidity',Substrate:'substrate',Hide:'hide',Water:'water',Lighting:'lighting',Other:'other',Notes:'notes'};Object.entries(fields).forEach(([id,key])=>$('env'+id).value=e[key]||'');const legacy=String(e.cageSize||'').match(/[0-9.]+/g)||[];$('envCageWidth').value=e.cageWidth??legacy[0]??'';$('envCageDepth').value=e.cageDepth??legacy[1]??'';$('envCageHeight').value=e.cageHeight??legacy[2]??'';$('environmentDialog').showModal()}
-$('environmentForm').onsubmit=e=>{e.preventDefault();const p=db.pets.find(x=>x.id===$('envPetId').value);if(!p)return;const fields={Cage:'cage',CageMaterial:'cageMaterial',Heater:'heater',Thermostat:'thermostat',TargetTemp:'targetTemp',TargetHumidity:'targetHumidity',Substrate:'substrate',Hide:'hide',Water:'water',Lighting:'lighting',Other:'other',Notes:'notes'};p.environment={};Object.entries(fields).forEach(([id,key])=>p.environment[key]=$('env'+id).value.trim());p.environment.cageWidth=$('envCageWidth').value;p.environment.cageDepth=$('envCageDepth').value;p.environment.cageHeight=$('envCageHeight').value;p.environment.cageSize=[p.environment.cageWidth,p.environment.cageDepth,p.environment.cageHeight].some(Boolean)?`${p.environment.cageWidth||'—'}×${p.environment.cageDepth||'—'}×${p.environment.cageHeight||'—'} cm`:'';closeDialog('environmentDialog');save()};
+$('environmentForm').onsubmit=async e=>{e.preventDefault();if(isSharedViewer()){alert('この共有ノートは閲覧のみです。環境情報を変更できません。');return}const p=db.pets.find(x=>x.id===$('envPetId').value);if(!p)return;const fields={Cage:'cage',CageMaterial:'cageMaterial',Heater:'heater',Thermostat:'thermostat',TargetTemp:'targetTemp',TargetHumidity:'targetHumidity',Substrate:'substrate',Hide:'hide',Water:'water',Lighting:'lighting',Other:'other',Notes:'notes'};p.environment={};Object.entries(fields).forEach(([id,key])=>p.environment[key]=$('env'+id).value.trim());p.environment.cageWidth=$('envCageWidth').value;p.environment.cageDepth=$('envCageDepth').value;p.environment.cageHeight=$('envCageHeight').value;p.environment.cageSize=[p.environment.cageWidth,p.environment.cageDepth,p.environment.cageHeight].some(Boolean)?`${p.environment.cageWidth||'—'}×${p.environment.cageDepth||'—'}×${p.environment.cageHeight||'—'} cm`:'';closeDialog('environmentDialog');save();await syncPetToCloud(p)};
 function renderEnvironment(){const el=$('environmentList');if(!db.pets.length){el.innerHTML='<div class="empty">先に個体を登録してください。</div>';return}el.innerHTML=db.pets.map(p=>{const e=p.environment||{};const rows=[['ケージ',e.cage,(e.cageWidth||e.cageDepth||e.cageHeight)?`${e.cageWidth||'—'}×${e.cageDepth||'—'}×${e.cageHeight||'—'} cm`:e.cageSize],['素材・特徴',e.cageMaterial],['保温器具',e.heater],['サーモスタット',e.thermostat],['目標温度',e.targetTemp],['目標湿度',e.targetHumidity],['床材',e.substrate],['シェルター',e.hide],['水入れ',e.water],['照明・UVB',e.lighting],['その他の設備',e.other],['環境メモ',e.notes]];const filled=rows.filter(x=>x[1]||x[2]);return `<div class="card"><div class="row"><div><h2 style="margin:0">🏡 ${esc(p.name)}</h2><div class="small">${esc(p.species||'')}</div></div><button class="btn" onclick="openEnvironmentForm('${p.id}')">編集</button></div>${filled.length?filled.map(x=>`<div class="listitem"><div class="small">${x[0]}</div><div>${esc([x[1],x[2]].filter(Boolean).join(' · '))}</div></div>`).join(''):'<div class="empty">まだ環境情報が登録されていません。</div>'}</div>`}).join('')}
 function openRecord(type='温湿度',petId='',date='',recordId=''){if(!db.pets.length){alert('先に個体を登録してください');return}const existing=recordId?db.records.find(r=>r.id===recordId):null;$('recordForm').reset();petOptions($('rPet'));$('recordId').value=existing?.id||'';if(existing){$('rPet').value=existing.petId;$('rType').value=existing.type==='メモ'?'その他':existing.type==='温湿度'?'温度':existing.type;$('rDate').value=existing.date;$('rNotes').value=existing.notes||'';selectedRecordPhoto=existing.photo||''}else{if(petId&&db.pets.some(p=>p.id===petId))$('rPet').value=petId;const base=date?new Date(date+'T09:00:00'):new Date();$('rDate').value=new Date(base.getTime()-base.getTimezoneOffset()*60000).toISOString().slice(0,16);$('rType').value=type;selectedRecordPhoto=null}recordFields();if(existing)Object.entries(existing.fields||{}).forEach(([id,value])=>{const target=id==='fTemp'?'fHotTemp':id;const field=$(target);if(field)field.value=value});if(existing?.type==='メモ'&&$('fOther')&&!$('fOther').value)$('fOther').value=existing.notes||'';if(existing?.type==='温湿度'&&$('fHum'))$('fHum').value=existing.fields?.fHum||'';$('recordDialogTitle').textContent=existing?'飼育記録を編集':'飼育記録を追加';$('recordDialog').showModal()}
 function quickRecord(type){openRecord(type)}
@@ -492,7 +523,7 @@ function renderHome(){
   </div></div></div>`
  })():''
 }
-function renderPets(){$('petList').innerHTML=db.pets.length?db.pets.map(p=>`<div class="card petrow"><div class="avatar">${p.photo?`<img src="${p.photo}">`:'🐍'}</div><div style="flex:1"><b>${esc(p.name)}</b><div class="small">${esc(p.species)} · ${esc(p.sex)}</div><div class="small pet-arrival">お迎え日：<span>${esc(p.arrival||'未登録')}</span></div></div><button class="btn" onclick="openPetForm('${p.id}')">編集</button><button class="btn ghost danger" onclick="deletePet('${p.id}')">削除</button></div>`).join(''):'<div class="empty">個体を登録してください</div>'}
+function renderPets(){const viewer=isSharedViewer();const add=$('addPetButton');if(add)add.hidden=viewer;$('petList').innerHTML=db.pets.length?db.pets.map(p=>`<div class="card petrow"><div class="avatar">${p.photo?`<img src="${p.photo}">`:'🐍'}</div><div style="flex:1"><b>${esc(p.name)}</b><div class="small">${esc(p.species)} · ${esc(p.sex)}</div><div class="small pet-arrival">お迎え日：<span>${esc(p.arrival||'未登録')}</span></div></div>${viewer?'':`<button class="btn" onclick="openPetForm('${p.id}')">編集</button><button class="btn ghost danger" onclick="deletePet('${p.id}')">削除</button>`}</div>`).join(''):'<div class="empty">個体を登録してください</div>'}
 function deletePet(id){if(confirm('個体と関連する記録・予定を削除しますか？')){db.pets=db.pets.filter(p=>p.id!==id);db.records=db.records.filter(r=>r.petId!==id);db.events=db.events.filter(e=>e.petId!==id);save()}}
 function renderUpcoming(){
  const today=new Date();today.setHours(0,0,0,0);
@@ -537,7 +568,7 @@ function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'app
 function importData(){const f=$('importFile').files[0];if(!f){alert('バックアップファイルを選択してください');return}const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x.pets)||!Array.isArray(x.records)||!Array.isArray(x.events))throw 0;if(confirm('現在のデータを置き換えて復元しますか？')){db=x;save();closeDialog('settingsDialog');alert('復元しました')}}catch(e){alert('ファイル形式が正しくありません')}};r.readAsText(f)}
 function clearData(){if(confirm('すべての個体・記録・予定を削除します。よろしいですか？')){db={pets:[],records:[],events:[],galleryPhotos:[],owner:{},hospital:{}};save();closeDialog('settingsDialog')}}
 async function enableNotifications(){if(!('Notification'in window)){alert('このブラウザは通知に対応していません');return}const p=await Notification.requestPermission();if(p==='granted'){alert('通知を許可しました。アプリを開いた際に今日・明日の誕生日とお迎え記念日をお知らせします。');checkAnniversaryNotifications()}else alert('通知は許可されませんでした')}
-load();renderAll();checkAnniversaryNotifications();checkShareInvite();
+load();renderAll();checkAnniversaryNotifications();checkShareInvite();if(sessionStorage.getItem('reptileNoteGuestSessionToken'))loadSharedPetsFromCloud(false);
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
 function enhanceNumberSteppers(root=document){
