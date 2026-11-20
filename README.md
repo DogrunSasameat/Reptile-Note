@@ -1,39 +1,8 @@
-# REPTILE NOTE
-爬虫類の飼育記録・管理ノートのWebアプリです。
+# REPTILE NOTE v0.3.5
 
-## データについて
-データは利用中のブラウザのローカルストレージに保存されます。ブラウザのデータ消去や端末故障に備え、設定画面から定期的にJSONバックアップを保存してください。
+## v0.3.5 changes
+- Unified the page background across all tabs to match the home screen.
+- Prevented the radial background gradient from repeating vertically on longer screens by setting a single viewport-sized, non-repeating background layer.
 
-## 現在の機能
-- 複数個体のプロフィール管理
-- 温湿度・給餌・体重・脱皮・排泄・健康などの飼育記録
-- カレンダーと予定
-- 写真付き記録
-- JSONバックアップ・復元
-- 誕生日・お迎え記念日の通知（アプリを開いた際に確認）
-
-## 今回のUI更新
-- 下部メニューのアイコンを直感的な絵文字に変更し、日本語ラベルを統一
-- 設定を「通知管理」「データ管理」「飼い主情報」「表示設定」に分類
-- ライト／ダークモード切り替えのための設定項目を追加予定として明示
-
-## v0.2.4 飼育環境タブ
-- 下部メニューに「環境」タブを追加
-- 個体ごとにケージ、サイズ、素材、保温器具、サーモスタット、目標温度・湿度、床材、シェルター、水入れ、照明、その他設備、環境メモを保存
-- 環境情報は各個体のプロフィールデータ内に保存され、既存の個体・記録・予定データは維持
-
-## v0.2.8 ホーム表示項目のカスタマイズ
-- ホームに「表示項目を編集」を追加
-- 年齢、お迎えからの日数、長さ、重さ、ご飯、排泄、温度、湿度、お掃除、その他をスイッチで個別に表示／非表示
-- 表示設定はブラウザ内に保存され、再読み込み後も維持
-- 個体プロフィールの編集は個体タブから行う構成に変更
-
-
-## v0.2.9
-- ホームの「クイック記録」カードを削除。
-- 個体ごとのホームタイル直下にある記録ボタンへ「体重」「長さ」を追加。
-- サービスワーカーのキャッシュバージョンを更新。
-
-
-## v0.3.0
-ホームの飼育ステータスを個体別タブで切り替えられるようにしました。選択中の個体はブラウザ内に保存され、再読み込み後も維持されます。
+## Deploy
+Replace the existing repository files with the files in this ZIP and deploy through GitHub Pages. Existing browser data is stored locally; do not clear site data when updating.
