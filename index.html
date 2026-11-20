@@ -39,6 +39,8 @@ form .btn{margin-top:4px}
 .pet-tabs{display:flex;gap:8px;overflow-x:auto;padding:8px 2px 4px;margin:4px 0 8px;scrollbar-width:thin}.pet-tab{flex:0 0 auto;border:1px solid var(--line);background:#111b2d;color:var(--muted);border-radius:999px;padding:9px 16px;font-weight:700;white-space:nowrap}.pet-tab.active{background:var(--lime);border-color:var(--lime);color:#17210e}.home-pet-panel{animation:fadeIn .16s ease}@keyframes fadeIn{from{opacity:.65}to{opacity:1}}
 .petrow{display:flex;gap:12px;align-items:center}.avatar{width:54px;height:54px;border-radius:14px;background:#273b3d;display:grid;place-items:center;font-size:28px;overflow:hidden;flex-shrink:0}.avatar img{width:100%;height:100%;object-fit:cover}
 .settings-row{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left;background:#19243a;color:var(--text);border:1px solid var(--line);border-radius:13px;padding:14px;margin:7px 0}.settings-row span{display:flex;flex-direction:column;gap:4px}.settings-row small{font-size:11px;color:var(--muted)}.settings-row strong{font-size:22px;color:var(--muted)}
+
+.first-setup-dialog{width:min(92vw,440px);text-align:left;padding:26px}.first-setup-mark{text-align:center;font-size:42px;margin:4px 0 12px}.first-setup-dialog h2{text-align:center;margin:0 0 10px}.first-setup-dialog .small{line-height:1.7}
 dialog{background:#121c2e;color:var(--text);border:1px solid var(--line);border-radius:18px;width:min(94vw,520px);max-height:88vh;overflow:auto;padding:18px}dialog::backdrop{background:#0009}.close{float:right;background:none;border:0;color:var(--muted);font-size:22px}
 .photo-preview{max-width:100%;max-height:170px;border-radius:10px;display:block;margin:5px 0 12px}
 .settings-section{padding:14px 0;border-bottom:1px solid var(--line)}.settings-section:last-of-type{border-bottom:0}.settings-section h3{font-size:14px;margin:0 0 8px}.notice{border-left:3px solid var(--orange);padding:9px 11px;background:#29271f;border-radius:8px;font-size:12px;color:#f7d9aa;margin:10px 0}
@@ -182,6 +184,7 @@ h2{font-size:15px;font-weight:650;letter-spacing:.01em}
 <button class="settings-row" onclick="openSettingDetail('display')"><span>🎨 <b>表示設定</b><small>テーマなどの表示方法</small></span><strong>›</strong></button>
 <button class="settings-row" onclick="openSettingDetail('participants')"><span>👥 <b>共有・参加者管理</b><small>共有ノートの参加者を確認</small></span><strong>›</strong></button>
 <p class="small" style="margin-top:16px">REPTILE NOTE prototype 0.4.23</p></dialog>
+<dialog id="firstSetupDialog" class="first-setup-dialog"><div class="first-setup-mark">🐍</div><h2>REPTILE NOTEへようこそ</h2><p class="small">新しい飼育ノートを作成します。最初は空の状態から始まり、個体や記録はあとから自由に追加できます。</p><form id="firstSetupForm"><label class="field" for="firstSetupName">ノート名</label><input id="firstSetupName" maxlength="80" required placeholder="例：わが家の飼育ノート" value="わが家の飼育ノート"><div id="firstSetupStatus" class="small" role="status" style="margin:10px 0"></div><button id="firstSetupButton" class="btn primary full" type="submit">新しい飼育ノートを作成</button></form><p class="small" style="margin-top:12px">作成すると、このブラウザにオーナー用のアクセス情報を保存します。共有リンクを知っている人は、そのノートに参加できます。</p></dialog>
 <dialog id="guestJoinDialog"><button class="close" onclick="closeGuestJoinDialog()">×</button><h2>🔗 共有ノートに参加</h2><p class="small">招待リンクから共有ノートに参加します。表示するニックネームを入力してください。</p><label class="field" for="guestJoinName">ニックネーム</label><input id="guestJoinName" maxlength="40" autocomplete="nickname" placeholder="例：ゲスト" required><div id="guestJoinStatus" class="small" role="status" style="margin:8px 0 12px"></div><button id="guestJoinButton" class="btn primary full" onclick="joinSharedWorkspace()">このノートに参加する</button></dialog>
 <dialog id="settingDetailDialog"><button class="close" onclick="closeDialog('settingDetailDialog')">×</button><button class="btn ghost" onclick="closeDialog('settingDetailDialog');openSettings()">← 設定に戻る</button><h2 id="settingDetailTitle" style="margin-top:14px"></h2><div id="settingDetailBody"></div></dialog>
 <dialog id="ownerEditDialog"><button class="close" onclick="closeDialog('ownerEditDialog')">×</button><h2>飼い主情報を編集</h2><form id="ownerForm"><label class="field">ニックネーム</label><input id="ownerNickname" placeholder="アプリ内で表示する名前"><label class="field">年齢</label><input id="ownerAge" type="number" min="0" max="120" placeholder="例：26"><label class="field">性別</label><select id="ownerGender"><option value="">未設定</option><option>女性</option><option>男性</option><option>その他</option><option>回答しない</option></select><label class="field">SNS</label><textarea id="ownerSns" placeholder="Instagram・XなどのアカウントやURL"></textarea><button class="btn primary full">保存</button></form></dialog>
@@ -189,9 +192,41 @@ h2{font-size:15px;font-weight:650;letter-spacing:.01em}
 <script>
 const KEY='reptileQuestData_v1';
 const GUEST_API_URL='https://eeimbuthmzecafbqialz.supabase.co/functions/v1/guest-api';
+const OWNER_TOKEN_KEY='reptileNoteOwnerToken_v1';
+const OWNER_WORKSPACE_KEY='reptileNoteOwnerWorkspace_v1';
 let db={pets:[],records:[],events:[],galleryPhotos:[]};let monthCursor=new Date();let selectedPhoto=null,selectedRecordPhoto=null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function maybeShowFirstSetup(){
+ const hasGuest=sessionStorage.getItem('reptileNoteGuestSessionToken');
+ const hasOwner=localStorage.getItem(OWNER_TOKEN_KEY)||sessionStorage.getItem('reptileNoteOwnerSessionToken');
+ const hasLocalData=!!localStorage.getItem(KEY);
+ if(!hasGuest&&!pendingShareToken&&!hasOwner&&!hasLocalData&&$('firstSetupDialog')&&!$('firstSetupDialog').open){
+  $('firstSetupDialog').showModal();
+ }
+}
+$('firstSetupForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const name=$('firstSetupName').value.trim();
+ const status=$('firstSetupStatus'),button=$('firstSetupButton');
+ if(!name||name.length>80){status.textContent='ノート名は1〜80文字で入力してください。';return;}
+ button.disabled=true;status.textContent='ノートを作成しています…';
+ try{
+  const response=await fetch(GUEST_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'create_workspace',name})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok||data.status!=='ok')throw new Error(data.error||data.message||`HTTP ${response.status}`);
+  const token=data.session?.token||data.sessionToken||data.token;
+  const workspaceId=data.workspace?.id||data.workspace_id||'';
+  if(!token||!workspaceId)throw new Error('ノート作成結果に必要な情報がありません。');
+  localStorage.setItem(OWNER_TOKEN_KEY,token);
+  localStorage.setItem(OWNER_WORKSPACE_KEY,JSON.stringify({id:workspaceId,name:data.workspace?.name||name}));
+  sessionStorage.setItem('reptileNoteOwnerSessionToken',token);
+  localStorage.setItem(KEY,JSON.stringify(db));
+  $('firstSetupDialog').close();
+  alert(`${data.workspace?.name||name} を作成しました。個体を追加して飼育ノートを始めましょう。`);
+ }catch(error){status.textContent=`作成できませんでした：${error.message}`;button.disabled=false;}
+});
+
 function load(){
  try{
   const raw=localStorage.getItem(KEY),x=raw?JSON.parse(raw):null;
@@ -219,7 +254,7 @@ function openSettingDetail(kind){
  if(kind==='data')html=`<div class="notice">データはこのブラウザ内に保存されます。端末故障やブラウザのデータ消去に備えて、定期的にバックアップしてください。</div><button class="btn full" onclick="exportData()">⬇ データをバックアップ</button><label class="field" style="margin-top:14px">バックアップから復元</label><input type="file" id="importFile" accept="application/json"><button class="btn full" onclick="importData()">⬆ バックアップを復元</button><button class="btn danger full" style="margin-top:12px" onclick="clearData()">すべてのデータを削除</button>`;
  if(kind==='display')html=`<div class="card"><p>ライトモード（白）・ダークモードの切り替えは今後対応予定です。</p></div>`;
  if(kind==='participants')html=`<div class="notice">共有サーバーへの接続先はアプリに設定済みです。オーナーのセッショントークンを入力してください。トークンはこのタブを閉じるまで保持し、バックアップには含めません。</div><label class="field">オーナーのセッショントークン</label><input id="participantOwnerToken" type="password" autocomplete="off" placeholder="オーナー用のセッショントークン"><button class="btn primary full" onclick="loadParticipants()">参加者一覧を読み込む</button><div id="participantStatus" class="small" style="margin-top:10px"></div><button class="btn full" style="margin-top:8px" onclick="syncAllLocalPetsToCloud()">この端末の個体を共有サーバーへ同期</button><div id="cloudPetSyncStatus" class="small" style="margin-top:7px"></div><div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px">🔗 共有リンクを発行</h3><label class="field">参加者の権限</label><select id="sharePermission"><option value="viewer">閲覧のみ</option><option value="editor">編集可能</option></select><label class="field">有効期限</label><select id="shareExpiry"><option value="7">7日間</option><option value="30" selected>30日間</option><option value="90">90日間</option><option value="365">1年間</option><option value="never">無期限</option></select><label class="field">利用回数上限</label><select id="shareMaxUses"><option value="1">1回</option><option value="5">5回</option><option value="10" selected>10回</option><option value="50">50回</option><option value="100">100回</option><option value="never">無制限</option></select><button class="btn primary full" onclick="createShareLink()">共有リンクを発行する</button><div id="shareLinkStatus" class="small" style="margin-top:9px"></div><div id="shareLinkResult"></div></div><div id="participantList"></div><button class="btn ghost full" style="margin-top:12px" onclick="clearParticipantToken()">このタブのトークンを消去</button>`;
- $('settingDetailBody').innerHTML=html;if(kind==='participants')$('participantOwnerToken').value=sessionStorage.getItem('reptileNoteOwnerSessionToken')||'';closeDialog('settingsDialog');$('settingDetailDialog').showModal();
+ $('settingDetailBody').innerHTML=html;if(kind==='participants')$('participantOwnerToken').value=sessionStorage.getItem('reptileNoteOwnerSessionToken')||localStorage.getItem(OWNER_TOKEN_KEY)||'';closeDialog('settingsDialog');$('settingDetailDialog').showModal();
 }
 async function loadParticipants(){
  const url=GUEST_API_URL;
@@ -310,7 +345,7 @@ async function joinSharedWorkspace(){
   const close=document.createElement('button');close.className='btn full';close.textContent='閉じる';close.onclick=()=>closeGuestJoinDialog();$('guestJoinDialog').appendChild(close);
  }catch(error){status.textContent=`参加できませんでした：${error.message}`;button.disabled=false;}
 }
-function activeSharedToken(){return sessionStorage.getItem('reptileNoteGuestSessionToken')||sessionStorage.getItem('reptileNoteOwnerSessionToken')||''}
+function activeSharedToken(){return sessionStorage.getItem('reptileNoteGuestSessionToken')||sessionStorage.getItem('reptileNoteOwnerSessionToken')||localStorage.getItem(OWNER_TOKEN_KEY)||''}
 function isSharedViewer(){return sessionStorage.getItem('reptileNoteGuestRole')==='viewer'}
 async function guestApi(payload){const response=await fetch(GUEST_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await response.json().catch(()=>({}));if(!response.ok||data.status!=='ok')throw new Error(data.error||data.message||`HTTP ${response.status}`);return data}
 async function syncPetToCloud(pet,quiet=false){
@@ -322,7 +357,7 @@ async function syncPetToCloud(pet,quiet=false){
  }catch(error){console.error('Cloud pet sync failed:',error);if(!quiet)alert(`共有サーバーへの保存に失敗しました。端末内のデータは保存されています。\n${error.message}`);return {error};}
 }
 async function loadSharedPetsFromCloud(showMessage=false){
- const token=sessionStorage.getItem('reptileNoteGuestSessionToken')||sessionStorage.getItem('reptileNoteOwnerSessionToken')||'';
+ const token=sessionStorage.getItem('reptileNoteGuestSessionToken')||sessionStorage.getItem('reptileNoteOwnerSessionToken')||localStorage.getItem(OWNER_TOKEN_KEY)||'';
  if(!token)return false;
  try{
   const data=await guestApi({action:'list_pets',token});
@@ -335,9 +370,9 @@ async function loadSharedPetsFromCloud(showMessage=false){
  }catch(error){console.error('Cloud pet load failed:',error);if(showMessage)alert(`共有ノートを読み込めませんでした。\n${error.message}`);return false;}
 }
 async function syncAllLocalPetsToCloud(){
- const token=$('participantOwnerToken')?.value.trim()||sessionStorage.getItem('reptileNoteOwnerSessionToken')||'';
+ const token=$('participantOwnerToken')?.value.trim()||sessionStorage.getItem('reptileNoteOwnerSessionToken')||localStorage.getItem(OWNER_TOKEN_KEY)||'';
  const status=$('cloudPetSyncStatus');if(!token){status.textContent='先にオーナーのセッショントークンを入力してください。';return;}
- sessionStorage.setItem('reptileNoteOwnerSessionToken',token);
+ sessionStorage.setItem('reptileNoteOwnerSessionToken',token);localStorage.setItem(OWNER_TOKEN_KEY,token);
  if(!db.pets.length){status.textContent='同期する個体はありません。';return;}
  status.textContent='個体情報を同期中…';let ok=0,fail=0;
  for(const pet of db.pets){const result=await syncPetToCloud(pet,true);if(result&&!result.error&&!result.skipped)ok++;else fail++;}
@@ -568,7 +603,7 @@ function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'app
 function importData(){const f=$('importFile').files[0];if(!f){alert('バックアップファイルを選択してください');return}const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x.pets)||!Array.isArray(x.records)||!Array.isArray(x.events))throw 0;if(confirm('現在のデータを置き換えて復元しますか？')){db=x;save();closeDialog('settingsDialog');alert('復元しました')}}catch(e){alert('ファイル形式が正しくありません')}};r.readAsText(f)}
 function clearData(){if(confirm('すべての個体・記録・予定を削除します。よろしいですか？')){db={pets:[],records:[],events:[],galleryPhotos:[],owner:{},hospital:{}};save();closeDialog('settingsDialog')}}
 async function enableNotifications(){if(!('Notification'in window)){alert('このブラウザは通知に対応していません');return}const p=await Notification.requestPermission();if(p==='granted'){alert('通知を許可しました。アプリを開いた際に今日・明日の誕生日とお迎え記念日をお知らせします。');checkAnniversaryNotifications()}else alert('通知は許可されませんでした')}
-load();renderAll();checkAnniversaryNotifications();checkShareInvite();if(sessionStorage.getItem('reptileNoteGuestSessionToken'))loadSharedPetsFromCloud(false);
+load();renderAll();checkAnniversaryNotifications();checkShareInvite();if(sessionStorage.getItem('reptileNoteGuestSessionToken'))loadSharedPetsFromCloud(false);else maybeShowFirstSetup();
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
 function enhanceNumberSteppers(root=document){
