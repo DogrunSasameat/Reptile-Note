@@ -20,3 +20,11 @@
 - Share management no longer asks users to paste the owner token; participant list and share-link actions use the current session automatically.
 - Existing edit/add handlers continue to sync pets, records and events automatically.
 - Deletion sync and photo upload are not included in this version.
+
+
+## v0.4.33 写真ギャラリー
+- ギャラリー写真をSupabase Storageへアップロード
+- 写真の公開範囲（自分だけ／共有）を設定
+- 共有写真をゲスト側で取得
+- 写真のクラウド削除
+- 撮影日・タイトル・メモを保存
