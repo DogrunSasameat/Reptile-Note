@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="description" content="爬虫類の飼育記録・健康管理アプリ">
+<link rel="manifest" href="manifest.webmanifest">
+<title>REPTILE QUEST</title>
+<style>
+:root{--bg:#0b1020;--panel:#151d30;--panel2:#1d2940;--line:#2b3954;--text:#f1f5f9;--muted:#9aa9bf;--lime:#b8f36b;--cyan:#7de3df;--orange:#ffbd69;--red:#ff7d86}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 20% -10%,#24334e 0,transparent 45%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;padding-bottom:84px}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+header{padding:22px 18px 14px;display:flex;align-items:center;justify-content:space-between;max-width:760px;margin:auto}
+.logo{font-weight:900;letter-spacing:.12em;font-size:18px}.logo span{color:var(--lime)}.sub{font-size:10px;color:var(--muted);letter-spacing:.16em;margin-top:3px}
+.wrap{max-width:760px;margin:auto;padding:0 14px}.screen{display:none}.screen.active{display:block}
+h1{font-size:23px;margin:12px 4px 4px}h2{font-size:16px;margin:0 0 12px}.muted{color:var(--muted)}.small{font-size:12px;color:var(--muted)}
+.card{background:linear-gradient(145deg,#19243a,#121a2c);border:1px solid var(--line);border-radius:18px;padding:15px;margin:12px 0;box-shadow:0 8px 28px #0003}
+.hero{padding:0;overflow:hidden}.hero-top{height:150px;background:linear-gradient(120deg,#243c43,#19253d 60%,#3d3a27);display:flex;align-items:center;justify-content:center;font-size:66px;position:relative}.hero-top img{width:100%;height:100%;object-fit:cover}.hero-body{padding:15px}
+.pill{display:inline-block;border:1px solid #526344;color:var(--lime);border-radius:99px;padding:4px 9px;font-size:11px;margin:3px 4px 3px 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat{background:#0e1728;border:1px solid var(--line);border-radius:13px;padding:12px}.stat label{display:block;color:var(--muted);font-size:10px;letter-spacing:.1em}.stat strong{font-size:22px;display:block;margin:4px 0}.stat small{color:var(--muted);font-size:11px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}.btn{border:1px solid var(--line);background:#26354e;color:var(--text);border-radius:12px;padding:10px 13px;font-weight:700}.btn.primary{background:var(--lime);color:#17210e;border:0}.btn.ghost{background:transparent}.btn.danger{color:var(--red)}.btn.full{width:100%}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions .btn{flex:1}
+nav{position:fixed;bottom:0;left:0;right:0;background:#0e1627ed;backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:center;padding:8px 5px calc(8px + env(safe-area-inset-bottom));z-index:5}
+nav button{background:none;border:0;color:var(--muted);font-size:10px;flex:1;max-width:125px;padding:5px 0}nav button b{display:block;font-size:20px;margin-bottom:2px}nav button.active{color:var(--lime)}
+input,select,textarea{width:100%;background:#0c1526;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px;margin:5px 0 12px}textarea{min-height:76px;resize:vertical}label.field{display:block;color:var(--muted);font-size:12px}
+form .btn{margin-top:4px}
+.listitem{padding:11px 0;border-bottom:1px solid var(--line)}.listitem:last-child{border:0}
+.tag{font-size:10px;border-radius:6px;padding:3px 7px;background:#273650;color:var(--cyan)}
+.empty{text-align:center;color:var(--muted);padding:22px 8px;font-size:13px}
+.petrow{display:flex;gap:12px;align-items:center}.avatar{width:54px;height:54px;border-radius:14px;background:#273b3d;display:grid;place-items:center;font-size:28px;overflow:hidden;flex-shrink:0}.avatar img{width:100%;height:100%;object-fit:cover}
+dialog{background:#121c2e;color:var(--text);border:1px solid var(--line);border-radius:18px;width:min(94vw,520px);max-height:88vh;overflow:auto;padding:18px}dialog::backdrop{background:#0009}.close{float:right;background:none;border:0;color:var(--muted);font-size:22px}
+.photo-preview{max-width:100%;max-height:170px;border-radius:10px;display:block;margin:5px 0 12px}
+.notice{border-left:3px solid var(--orange);padding:9px 11px;background:#29271f;border-radius:8px;font-size:12px;color:#f7d9aa;margin:10px 0}
+footer{text-align:center;color:#64748b;font-size:10px;padding:24px 0}
+@media(min-width:600px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.hero-top{height:190px}}
+</style>
+</head>
+<body>
+<header><div><div class="logo">REPTILE <span>QUEST</span></div><div class="sub">YOUR REPTILE COMPANION DATABASE</div></div><button class="btn ghost" onclick="openSettings()">⚙</button></header>
+<main class="wrap">
+<section id="home" class="screen active">
+ <div class="row"><div><h1>ADVENTURE LOG</h1><div class="small">今日の飼育ステータス</div></div><button class="btn primary" onclick="openPetForm()">＋ 個体追加</button></div>
+ <div id="homePets"></div>
+ <div class="card"><div class="row"><h2>📅 今日・これからの予定</h2><button class="btn ghost" onclick="show('calendar')">一覧 →</button></div><div id="upcoming"></div></div>
+ <div class="card"><h2>⚡ クイック記録</h2><div class="actions"><button class="btn" onclick="quickRecord('給餌')">🍽 給餌</button><button class="btn" onclick="quickRecord('体重')">⚖ 体重</button><button class="btn" onclick="quickRecord('温湿度')">🌡 温湿度</button></div></div>
+</section>
+<section id="pets" class="screen"><div class="row"><h1>MONSTER BOX</h1><button class="btn primary" onclick="openPetForm()">＋ 追加</button></div><div id="petList"></div></section>
+<section id="records" class="screen"><h1>RECORD LOG</h1><div class="card"><label class="field">個体</label><select id="recordPetFilter" onchange="renderRecords()"></select><label class="field">記録の種類</label><select id="recordTypeFilter" onchange="renderRecords()"><option value="">すべて</option><option>温湿度</option><option>給餌</option><option>体重</option><option>脱皮</option><option>排泄</option><option>健康・通院</option><option>メモ</option></select></div><div id="recordList"></div></section>
+<section id="calendar" class="screen"><h1>QUEST CALENDAR</h1><div class="card"><div class="small" style="margin-bottom:8px">🍽️ 給餌　🐍 脱皮　💩 排泄　⚖️ 体重　🌡️ 温湿度　🩺 健康　🎂 誕生日　🏠 お迎え記念日</div><div class="row"><button class="btn" onclick="changeMonth(-1)">‹</button><strong id="monthTitle"></strong><button class="btn" onclick="changeMonth(1)">›</button></div><div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px"></div></div><div class="row"><h2>予定リスト</h2><button class="btn primary" onclick="openEventForm()">＋ 予定追加</button></div><div id="eventList"></div></section>
+<section id="album" class="screen"><h1>GALLERY</h1><div class="card"><div class="small">写真付きの記録を表示します。</div></div><div id="albumGrid" class="grid"></div></section>
+</main>
+<nav><button class="active" data-screen="home" onclick="show('home')"><b>⌂</b>HOME</button><button data-screen="pets" onclick="show('pets')"><b>♧</b>個体</button><button data-screen="records" onclick="show('records')"><b>▤</b>記録</button><button data-screen="calendar" onclick="show('calendar')"><b>▦</b>予定</button><button data-screen="album" onclick="show('album')"><b>▧</b>写真</button></nav>
+<dialog id="petDialog"><button class="close" onclick="closeDialog('petDialog')">×</button><h2>個体データ</h2><form id="petForm"><input type="hidden" id="petId"><label class="field">名前 *</label><input id="petName" required placeholder="例：ククルカン"><label class="field">種類</label><input id="petSpecies" placeholder="例：ボールパイソン"><div class="grid"><div><label class="field">性別</label><select id="petSex"><option>不明</option><option>♀</option><option>♂</option></select></div><div><label class="field">お迎え日</label><input id="petArrival" type="date"></div></div><label class="field">誕生日（分かる場合）</label><input id="petBirthday" type="date"><label class="field">モルフ・品種</label><input id="petMorph" placeholder="任意"><label class="field">写真</label><input id="petPhoto" type="file" accept="image/*"><img id="petPhotoPreview" class="photo-preview" hidden><label class="field">プロフィールメモ</label><textarea id="petNotes"></textarea><button class="btn primary full" type="submit">保存する</button></form></dialog>
+<dialog id="recordDialog"><button class="close" onclick="closeDialog('recordDialog')">×</button><h2>飼育記録を追加</h2><form id="recordForm"><label class="field">個体 *</label><select id="rPet" required></select><label class="field">記録タイプ</label><select id="rType" onchange="recordFields()"><option>温湿度</option><option>給餌</option><option>体重</option><option>脱皮</option><option>排泄</option><option>健康・通院</option><option>メモ</option></select><label class="field">日時</label><input id="rDate" type="datetime-local" required><div id="dynamicFields"></div><label class="field">メモ</label><textarea id="rNotes" placeholder="気づいたこと、様子など"></textarea><label class="field">写真（任意）</label><input id="rPhoto" type="file" accept="image/*"><button class="btn primary full" type="submit">記録を保存</button></form></dialog>
+<dialog id="eventDialog"><button class="close" onclick="closeDialog('eventDialog')">×</button><h2>予定を追加</h2><form id="eventForm"><label class="field">個体</label><select id="ePet"></select><label class="field">予定名 *</label><input id="eTitle" required placeholder="例：給餌予定、体重測定"><label class="field">日時 *</label><input id="eDate" type="datetime-local" required><label class="field">メモ</label><textarea id="eNotes"></textarea><button class="btn primary full">予定を保存</button></form></dialog>
+<dialog id="settingsDialog"><button class="close" onclick="closeDialog('settingsDialog')">×</button><h2>SETTINGS / DATA</h2><div class="notice">データはこのブラウザ内に保存されます。ブラウザのデータ消去や端末故障に備えて、定期的にバックアップしてください。</div><button class="btn full" onclick="exportData()">⬇ データをバックアップ（JSON）</button><label class="field" style="margin-top:16px">バックアップから復元</label><input type="file" id="importFile" accept="application/json"><button class="btn full" onclick="importData()">⬆ 復元する</button><button class="btn full" style="margin-top:10px" onclick="enableNotifications()">🔔 通知の許可を確認</button><p class="small">通知は対応ブラウザでアプリを開いた際に予定を確認する方式です。閉じている間の確実な通知は、今後サーバー等を使う別機能として検討します。</p><button class="btn danger full" onclick="clearData()">すべてのデータを削除</button><p class="small">REPTILE QUEST prototype 0.1.0</p></dialog>
+<script>
+const KEY='reptileQuestData_v1';
+let db={pets:[],records:[],events:[]};let monthCursor=new Date();let selectedPhoto=null,selectedRecordPhoto=null;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&Array.isArray(x.pets))db=x;}catch(e){} if(!db.pets.length&&!localStorage.getItem(KEY)){db.pets=[{id:crypto.randomUUID(),name:'ククルカン',species:'ボールパイソン',sex:'♀',arrival:'2026-11-14',birthday:'',morph:'',notes:'おくびょうな性格。ものおとに敏感。',photo:''}];save();} }
+function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===id));renderAll()}
+function closeDialog(id){$(id).close()}
+function openSettings(){$('settingsDialog').showModal()}
+function petName(id){return db.pets.find(p=>p.id===id)?.name||'削除済み個体'}
+function petOptions(select,includeAll=false){select.innerHTML=(includeAll?'<option value="">すべて</option>':'')+db.pets.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('')}
+function openPetForm(id=''){const p=db.pets.find(x=>x.id===id)||{};$('petForm').reset();$('petId').value=p.id||'';['Name','Species','Sex','Arrival','Birthday','Morph','Notes'].forEach(k=>{$('pet'+k).value=p[{Name:'name',Species:'species',Sex:'sex',Arrival:'arrival',Birthday:'birthday',Morph:'morph',Notes:'notes'}[k]]|| (k==='Sex'?'不明':'')});selectedPhoto=p.photo||null;$('petPhotoPreview').hidden=!selectedPhoto;if(selectedPhoto)$('petPhotoPreview').src=selectedPhoto;$('petDialog').showModal()}
+$('petPhoto').onchange=async e=>{selectedPhoto=await readPhoto(e.target.files[0]);$('petPhotoPreview').hidden=!selectedPhoto;if(selectedPhoto)$('petPhotoPreview').src=selectedPhoto};
+function readPhoto(file){return new Promise((res,rej)=>{if(!file)return res(null);const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
+$('petForm').onsubmit=e=>{e.preventDefault();const id=$('petId').value||crypto.randomUUID();const old=db.pets.find(p=>p.id===id)||{};const p={id,name:$('petName').value.trim(),species:$('petSpecies').value,sex:$('petSex').value,arrival:$('petArrival').value,birthday:$('petBirthday').value,morph:$('petMorph').value,notes:$('petNotes').value,photo:selectedPhoto||old.photo||''};const i=db.pets.findIndex(x=>x.id===id);if(i<0)db.pets.push(p);else db.pets[i]=p;closeDialog('petDialog');save()};
+function openRecord(type='温湿度',petId=''){if(!db.pets.length){alert('先に個体を登録してください');return}petOptions($('rPet'));if(petId)$('rPet').value=petId;$('recordForm').reset();$('rDate').value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);$('rType').value=type;recordFields();$('recordDialog').showModal()}
+function quickRecord(type){openRecord(type)}
+function recordFields(){const t=$('rType').value;let h='';if(t==='温湿度')h='<div class="grid"><div><label class="field">温度（℃）</label><input id="fTemp" type="number" step="0.1" placeholder="例：31.0"></div><div><label class="field">湿度（%）</label><input id="fHum" type="number" step="1" placeholder="例：60"></div></div><label class="field">測定場所</label><input id="fPlace" placeholder="ホット／クール／ケージ内など">';if(t==='給餌')h='<label class="field">餌の種類・サイズ</label><input id="fFood" placeholder="例：ファジーマウス"><label class="field">結果</label><select id="fResult"><option>食べた</option><option>食べなかった</option><option>一部食べた</option></select>';if(t==='体重')h='<label class="field">体重（g） *</label><input id="fWeight" type="number" step="0.1" placeholder="例：520">';if(t==='脱皮')h='<label class="field">脱皮の状態</label><select id="fShed"><option>きれいに脱皮</option><option>一部残りあり</option><option>脱皮不全・要観察</option></select>';if(t==='排泄')h='<label class="field">内容</label><select id="fWaste"><option>便</option><option>尿酸</option><option>便・尿酸</option><option>その他</option></select>';if(t==='健康・通院')h='<label class="field">状態・症状・処置</label><input id="fHealth" placeholder="症状、病院名、投薬など">';$('dynamicFields').innerHTML=h}
+$('rPhoto').onchange=async e=>selectedRecordPhoto=await readPhoto(e.target.files[0]);
+$('recordForm').onsubmit=e=>{e.preventDefault();const t=$('rType').value;const fields={};document.querySelectorAll('#dynamicFields input,#dynamicFields select').forEach(x=>fields[x.id]=x.value);if(t==='体重'&&!fields.fWeight){alert('体重を入力してください');return}db.records.unshift({id:crypto.randomUUID(),petId:$('rPet').value,type:t,date:$('rDate').value,fields,notes:$('rNotes').value,photo:selectedRecordPhoto||''});selectedRecordPhoto=null;closeDialog('recordDialog');save()};
+function recordSummary(r){const f=r.fields||{};if(r.type==='温湿度')return [f.fTemp?f.fTemp+'℃':'',f.fHum?f.fHum+'%':'',f.fPlace].filter(Boolean).join(' / ');if(r.type==='給餌')return [f.fFood,f.fResult].filter(Boolean).join(' / ');if(r.type==='体重')return f.fWeight?f.fWeight+' g':'';if(r.type==='脱皮')return f.fShed||'';if(r.type==='排泄')return f.fWaste||'';if(r.type==='健康・通院')return f.fHealth||'';return ''}
+function renderRecords(){petOptions($('recordPetFilter'),true);const pid=$('recordPetFilter').value,typ=$('recordTypeFilter').value;const arr=db.records.filter(r=>(!pid||r.petId===pid)&&(!typ||r.type===typ));$('recordList').innerHTML=arr.length?arr.map(r=>`<div class="card"><div class="row"><b>${esc(r.type)} <span class="tag">${esc(petName(r.petId))}</span></b><button class="btn ghost danger" onclick="deleteRecord('${r.id}')">削除</button></div><div class="small">${esc(r.date.replace('T',' '))}</div><div style="margin-top:7px">${esc(recordSummary(r))}</div>${r.notes?`<p>${esc(r.notes)}</p>`:''}${r.photo?`<img src="${r.photo}" class="photo-preview">`:''}</div>`).join(''):'<div class="empty">記録はまだありません</div>'}
+function deleteRecord(id){if(confirm('この記録を削除しますか？')){db.records=db.records.filter(r=>r.id!==id);save()}}
+function openEventForm(){petOptions($('ePet'));$('eventForm').reset();$('eDate').value=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);$('eventDialog').showModal()}
+$('eventForm').onsubmit=e=>{e.preventDefault();db.events.push({id:crypto.randomUUID(),petId:$('ePet').value,title:$('eTitle').value,date:$('eDate').value,notes:$('eNotes').value,done:false});closeDialog('eventDialog');save()};
+function dateKey(value){return String(value||'').slice(0,10)}
+function localDateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function anniversaryItems(year){
+ const out=[];
+ db.pets.forEach(p=>{
+  if(p.birthday){const md=p.birthday.slice(5);out.push({date:`${year}-${md}`,icon:'🎂',title:`${p.name}の誕生日`,petId:p.id,kind:'anniversary'});}
+  if(p.arrival){const md=p.arrival.slice(5);out.push({date:`${year}-${md}`,icon:'🏠',title:`${p.name}のお迎え記念日`,petId:p.id,kind:'anniversary'});}
+ });
+ return out;
+}
+function calendarItemsForDay(ds){
+ const recIcons={'給餌':'🍽️','脱皮':'🐍','排泄':'💩','体重':'⚖️','温湿度':'🌡️','健康・通院':'🩺','メモ':'📝'};
+ const recs=db.records.filter(r=>dateKey(r.date)===ds).map(r=>({icon:recIcons[r.type]||'•',title:r.type,detail:recordSummary(r),petId:r.petId,kind:'record'}));
+ const evs=db.events.filter(e=>dateKey(e.date)===ds).map(e=>({icon:'📌',title:e.title,detail:e.notes,petId:e.petId,kind:'event'}));
+ const anns=anniversaryItems(Number(ds.slice(0,4))).filter(a=>a.date===ds);
+ return [...anns,...recs,...evs];
+}
+function renderCalendar(){
+ const y=monthCursor.getFullYear(),m=monthCursor.getMonth();
+ $('monthTitle').textContent=`${y}年 ${m+1}月`;
+ const first=new Date(y,m,1).getDay(),last=new Date(y,m+1,0).getDate();
+ let h=['日','月','火','水','木','金','土'].map(x=>`<div class="small" style="text-align:center">${x}</div>`).join('');
+ for(let i=0;i<first;i++)h+='<div></div>';
+ for(let d=1;d<=last;d++){
+  const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  const items=calendarItemsForDay(ds),icons=[...new Set(items.map(x=>x.icon))].slice(0,3);
+  const today=ds===localDateKey(new Date());
+  h+=`<button type="button" onclick="showDayDetails('${ds}')" aria-label="${ds} ${items.length}件" style="min-width:0;min-height:65px;text-align:center;padding:5px 1px;border:1px solid ${today?'var(--lime)':'var(--line)'};border-radius:9px;background:${items.length?'#25364a':'#0e1728'};color:var(--text)"><div style="font-size:12px">${d}</div><div style="font-size:11px;line-height:1.5;white-space:nowrap;overflow:hidden">${icons.join('')||'　'}</div>${items.length?`<div style="font-size:9px;color:var(--lime)">${items.length}件</div>`:''}</button>`;
+ }
+ $('calendarGrid').innerHTML=h;
+ const ev=db.events.slice().sort((a,b)=>a.date.localeCompare(b.date));
+ $('eventList').innerHTML=ev.length?ev.map(x=>`<div class="card"><div class="row"><b>${esc(x.title)}</b><button class="btn ghost danger" onclick="deleteEvent('${x.id}')">削除</button></div><div class="small">${esc(x.date.replace('T',' '))} · ${esc(x.petId?petName(x.petId):'共通')}</div>${x.notes?`<p>${esc(x.notes)}</p>`:''}</div>`).join(''):'<div class="empty">予定はありません</div>';
+}
+function showDayDetails(ds){
+ const items=calendarItemsForDay(ds);
+ const body=items.length?items.map(x=>`<div class="listitem"><b>${x.icon} ${esc(x.title)}</b><div class="small">${esc(x.petId?petName(x.petId):'共通')}${x.detail?' · '+esc(x.detail):''}</div></div>`).join(''):'<div class="empty">この日の記録・予定はありません</div>';
+ const dlg=document.createElement('dialog');dlg.innerHTML=`<button class="close" onclick="this.closest('dialog').close();this.closest('dialog').remove()">×</button><h2>${esc(ds)} の記録</h2>${body}<button class="btn full" style="margin-top:12px" onclick="this.closest('dialog').close();this.closest('dialog').remove()">閉じる</button>`;
+ document.body.appendChild(dlg);dlg.showModal();dlg.addEventListener('close',()=>dlg.remove(),{once:true});
+}
+function changeMonth(n){monthCursor.setMonth(monthCursor.getMonth()+n);renderCalendar()}
+function deleteEvent(id){if(confirm('予定を削除しますか？')){db.events=db.events.filter(e=>e.id!==id);save()}}
+function ageText(birthday){
+ if(!birthday)return '未登録';
+ const b=new Date(birthday+'T12:00:00'),n=new Date();
+ if(Number.isNaN(b.getTime())||b>n)return '未登録';
+ let years=n.getFullYear()-b.getFullYear(),months=n.getMonth()-b.getMonth(),days=n.getDate()-b.getDate();
+ if(days<0){months--;days=new Date(n.getFullYear(),n.getMonth(),0).getDate()+days;}
+ if(months<0){years--;months+=12;}
+ if(years>0)return `${years}歳${months}か月`;
+ if(months>0)return `${months}か月${days}日`;
+ return `${Math.max(0,days)}日`;
+}
+function daysTogether(arrival){
+ if(!arrival)return '未登録';
+ const a=new Date(arrival+'T00:00:00'),n=new Date();a.setHours(0,0,0,0);n.setHours(0,0,0,0);
+ if(Number.isNaN(a.getTime())||a>n)return '未登録';
+ return `${Math.floor((n-a)/86400000)+1}日目`;
+}
+function renderHome(){const el=$('homePets');el.innerHTML=db.pets.length?db.pets.map(p=>{const w=db.records.find(r=>r.petId===p.id&&r.type==='体重');const t=db.records.find(r=>r.petId===p.id&&r.type==='温湿度');const wf=w?.fields?.fWeight;const tf=t?.fields?.fTemp;const hf=t?.fields?.fHum;return `<div class="card hero"><div class="hero-top">${p.photo?`<img src="${p.photo}">`:'🐍'}</div><div class="hero-body"><div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2><div class="small">${esc(p.species||'種類未登録')} · ${esc(p.sex||'性別不明')}</div></div><button class="btn" onclick="openPetForm('${p.id}')">編集</button></div><div style="margin:8px 0"><span class="pill">STATUS: ACTIVE</span></div><div class="grid"><div class="stat"><label>AGE / 年齢</label><strong>${ageText(p.birthday)}</strong><small>誕生日から自動計算</small></div><div class="stat"><label>DAYS TOGETHER</label><strong>${daysTogether(p.arrival)}</strong><small>お迎えからの日数</small></div><div class="stat"><label>WEIGHT</label><strong>${wf?esc(wf)+' g':'--'}</strong><small>最新記録</small></div><div class="stat"><label>TEMPERATURE</label><strong>${tf?esc(tf)+'℃':'--'}</strong><small>最新記録</small></div><div class="stat"><label>HUMIDITY</label><strong>${hf?esc(hf)+'%':'--'}</strong><small>最新記録</small></div><div class="stat"><label>RECORDS</label><strong>${db.records.filter(r=>r.petId===p.id).length}</strong><small>記録件数</small></div></div><div class="actions" style="margin-top:12px"><button class="btn primary" onclick="openRecord('温湿度','${p.id}')">＋ 記録</button><button class="btn" onclick="openRecord('体重','${p.id}')">⚖ 体重</button><button class="btn" onclick="openRecord('給餌','${p.id}')">🍽 給餌</button></div></div></div>`}).join(''):'<div class="empty">まだ個体がいません。「個体追加」から登録してください。</div>'}
+function renderPets(){$('petList').innerHTML=db.pets.length?db.pets.map(p=>`<div class="card petrow"><div class="avatar">${p.photo?`<img src="${p.photo}">`:'🐍'}</div><div style="flex:1"><b>${esc(p.name)}</b><div class="small">${esc(p.species)} · ${esc(p.sex)}</div><div class="small">お迎え日：${esc(p.arrival||'未登録')}</div></div><button class="btn" onclick="openPetForm('${p.id}')">編集</button><button class="btn ghost danger" onclick="deletePet('${p.id}')">削除</button></div>`).join(''):'<div class="empty">個体を登録してください</div>'}
+function deletePet(id){if(confirm('個体と関連する記録・予定を削除しますか？')){db.pets=db.pets.filter(p=>p.id!==id);db.records=db.records.filter(r=>r.petId!==id);db.events=db.events.filter(e=>e.petId!==id);save()}}
+function renderUpcoming(){
+ const today=new Date();today.setHours(0,0,0,0);
+ const items=db.events.filter(e=>new Date(e.date)>=today).map(e=>({date:e.date,title:e.title,petId:e.petId,icon:'📌'}));
+ for(let offset=0;offset<=30;offset++){
+  const d=new Date(today);d.setDate(d.getDate()+offset);const ds=localDateKey(d);
+  anniversaryItems(d.getFullYear()).filter(a=>a.date===ds).forEach(a=>items.push({date:ds,title:a.title,petId:a.petId,icon:a.icon}));
+ }
+ items.sort((a,b)=>a.date.localeCompare(b.date));
+ const a=items.slice(0,5);
+ $('upcoming').innerHTML=a.length?a.map(e=>`<div class="listitem"><div class="row"><b>${e.icon} ${esc(e.title)}</b><span class="small">${esc(e.date)}</span></div><div class="small">${esc(e.petId?petName(e.petId):'共通')}</div></div>`).join(''):'<div class="empty">予定はありません</div>';
+}
+function checkAnniversaryNotifications(){
+ if(!('Notification' in window)||Notification.permission!=='granted')return;
+ const today=localDateKey(new Date()),tomorrowDate=new Date();tomorrowDate.setDate(tomorrowDate.getDate()+1);
+ const tomorrow=localDateKey(tomorrowDate),key='rq-anniversary-notified-'+today;
+ if(localStorage.getItem(key))return;
+ const todays=anniversaryItems(Number(today.slice(0,4))).filter(a=>a.date===today);
+ const tomorrows=anniversaryItems(Number(tomorrow.slice(0,4))).filter(a=>a.date===tomorrow);
+ [...todays,...tomorrows].forEach(a=>new Notification(a.title,{body:a.date===today?'今日は記念日です！':'明日は記念日です！',tag:a.title+'-'+a.date}));
+ if(todays.length||tomorrows.length)localStorage.setItem(key,'1');
+}
+function renderAlbum(){const a=db.records.filter(r=>r.photo);$('albumGrid').innerHTML=a.length?a.map(r=>`<div class="card" style="padding:8px"><img src="${r.photo}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px"><div style="font-size:12px;margin-top:7px">${esc(petName(r.petId))}</div><div class="small">${esc(r.type)} · ${esc(r.date.slice(0,10))}</div></div>`).join(''):'<div class="empty" style="grid-column:1/-1">写真付き記録はまだありません</div>'}
+function renderAll(){renderHome();renderPets();renderRecords();renderCalendar();renderUpcoming();renderAlbum()}
+function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='reptile-quest-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href)}
+function importData(){const f=$('importFile').files[0];if(!f){alert('バックアップファイルを選択してください');return}const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x.pets)||!Array.isArray(x.records)||!Array.isArray(x.events))throw 0;if(confirm('現在のデータを置き換えて復元しますか？')){db=x;save();closeDialog('settingsDialog');alert('復元しました')}}catch(e){alert('ファイル形式が正しくありません')}};r.readAsText(f)}
+function clearData(){if(confirm('すべての個体・記録・予定を削除します。よろしいですか？')){db={pets:[],records:[],events:[]};save();closeDialog('settingsDialog')}}
+async function enableNotifications(){if(!('Notification'in window)){alert('このブラウザは通知に対応していません');return}const p=await Notification.requestPermission();if(p==='granted'){alert('通知を許可しました。アプリを開いた際に今日・明日の誕生日とお迎え記念日をお知らせします。');checkAnniversaryNotifications()}else alert('通知は許可されませんでした')}
+load();renderAll();checkAnniversaryNotifications();
+if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
