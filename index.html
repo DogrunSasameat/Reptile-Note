@@ -95,8 +95,9 @@ select optgroup{background:#17243a;color:#b8f36b;font-weight:700}
 .date-display:focus{outline:none;border-color:var(--lime)!important;box-shadow:0 0 0 3px #b8f36b22}
 .date-open-btn{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:32px;height:32px;padding:0;border:1px solid #35445e;border-radius:9px;background:#1a2940;color:var(--lime);font-size:17px;display:grid;place-items:center}
 .date-open-btn:active{background:#2a3d57}
-.date-picker-overlay{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:18px;background:#020817b8;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
-.date-picker-overlay.open{display:flex}
+.date-picker-overlay{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:18px;border:0;background:transparent;overflow:auto;color:inherit}
+.date-picker-overlay[open]{display:flex}
+.date-picker-overlay::backdrop{background:#020817c9;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
 .date-picker-card{width:min(100%,350px);padding:17px;border:1px solid #3b4d69;border-radius:20px;background:linear-gradient(155deg,#1a2940,#0e1729 70%);box-shadow:0 22px 70px #0009;color:#eef4ff}
 .date-picker-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:17px}
 .date-picker-top small{display:block;color:#9bacbf;font-size:9px;letter-spacing:.18em;margin-bottom:4px}
@@ -123,6 +124,13 @@ select optgroup{background:#17243a;color:#b8f36b;font-weight:700}
 .date-picker-actions button{padding:8px 12px;border:1px solid #35445e;border-radius:10px;background:#17243a;color:#cbd7e6;font-size:12px}
 .date-picker-actions #dpApply{background:var(--lime);border-color:var(--lime);color:#17210e;font-weight:800}
 @media(max-width:380px){.date-picker-card{padding:13px}.date-picker-week,.date-picker-days{gap:3px}.dp-day{border-radius:8px}}
+
+/* Pet profile: reserve enough width to show the complete arrival date */
+.pet-date-grid{grid-template-columns:minmax(82px,.7fr) minmax(175px,1.3fr);align-items:end}
+.pet-date-grid>div{min-width:0}
+.pet-date-grid .date-input-wrap,.pet-date-grid .date-display{width:100%;min-width:0}
+.pet-date-grid .date-display{font-size:14px!important;letter-spacing:0;padding-left:10px!important;padding-right:42px!important}
+@media(max-width:390px){.pet-date-grid{grid-template-columns:minmax(72px,.65fr) minmax(165px,1.35fr);gap:7px}}
 </style>
 </head>
 <body>
@@ -141,7 +149,7 @@ select optgroup{background:#17243a;color:#b8f36b;font-weight:700}
 </main>
 <nav aria-label="メインメニュー"><button class="active" data-screen="home" onclick="show('home')" aria-label="ホーム"><b>🏠</b>ホーム</button><button data-screen="pets" onclick="show('pets')" aria-label="個体"><b>🐍</b>個体</button><button data-screen="environment" onclick="show('environment')" aria-label="飼育環境"><b>🏡</b>環境</button><button data-screen="records" onclick="show('records')" aria-label="飼育記録"><b>📝</b>記録</button><button data-screen="calendar" onclick="show('calendar')" aria-label="カレンダー"><b>📅</b>予定</button><button data-screen="album" onclick="show('album')" aria-label="写真"><b>🖼️</b>写真</button></nav>
 <dialog id="tileDialog"><button class="close" onclick="closeDialog('tileDialog')">×</button><h2>ホームの表示項目</h2><p class="small">表示したい項目をオンにしてください。変更はすぐにホームへ反映されます。</p><div id="tileSwitches"></div><button class="btn full" style="margin-top:14px" onclick="closeDialog('tileDialog')">閉じる</button></dialog>
-<dialog id="petDialog"><button class="close" onclick="closeDialog('petDialog')">×</button><h2>個体データ</h2><form id="petForm"><input type="hidden" id="petId"><label class="field">名前 *</label><input id="petName" required placeholder="例：ククルカン"><label class="field">種類</label><input id="petSpecies" placeholder="例：ボールパイソン"><div class="grid"><div><label class="field">性別</label><select id="petSex"><option>不明</option><option>♀</option><option>♂</option></select></div><div><label class="field">お迎え日</label><input id="petArrival" type="date" min="0001-01-01" max="9999-12-31"></div></div><label class="field">誕生日（分かる場合）</label><input id="petBirthday" type="date" min="0001-01-01" max="9999-12-31"><label class="field">モルフ・品種</label><input id="petMorph" placeholder="任意"><label class="field">写真</label><input id="petPhoto" type="file" accept="image/*"><img id="petPhotoPreview" class="photo-preview" hidden><label class="field">プロフィールメモ</label><textarea id="petNotes"></textarea><button class="btn primary full" type="submit">保存する</button></form></dialog>
+<dialog id="petDialog"><button class="close" onclick="closeDialog('petDialog')">×</button><h2>個体データ</h2><form id="petForm"><input type="hidden" id="petId"><label class="field">名前 *</label><input id="petName" required placeholder="例：ククルカン"><label class="field">種類</label><input id="petSpecies" placeholder="例：ボールパイソン"><div class="grid pet-date-grid"><div><label class="field">性別</label><select id="petSex"><option>不明</option><option>♀</option><option>♂</option></select></div><div><label class="field">お迎え日</label><input id="petArrival" type="date" min="0001-01-01" max="9999-12-31"></div></div><label class="field">誕生日（分かる場合）</label><input id="petBirthday" type="date" min="0001-01-01" max="9999-12-31"><label class="field">モルフ・品種</label><input id="petMorph" placeholder="任意"><label class="field">写真</label><input id="petPhoto" type="file" accept="image/*"><img id="petPhotoPreview" class="photo-preview" hidden><label class="field">プロフィールメモ</label><textarea id="petNotes"></textarea><button class="btn primary full" type="submit">保存する</button></form></dialog>
 <dialog id="environmentDialog"><button class="close" onclick="closeDialog('environmentDialog')">×</button><h2>飼育環境を編集</h2><form id="environmentForm"><input type="hidden" id="envPetId"><div class="small" id="envPetName"></div><h3>ケージ・飼育容器</h3><label class="field">種類・製品名</label><input id="envCage" placeholder="例：レプタイルボックス"><label class="field">サイズ・寸法（cm）</label><div class="grid dimension-grid"><div><label class="field">幅</label><input id="envCageWidth" type="number" step="0.1" placeholder="幅"></div><div><label class="field">奥行</label><input id="envCageDepth" type="number" step="0.1" placeholder="奥行"></div><div><label class="field">高さ</label><input id="envCageHeight" type="number" step="0.1" placeholder="高さ"></div></div><label class="field">素材・特徴</label><input id="envCageMaterial" placeholder="例：プラスチック製、通気口あり"><h3>保温・温湿度管理</h3><label class="field">保温器具</label><input id="envHeater" placeholder="例：パネルヒーター"><label class="field">サーモスタット</label><input id="envThermostat" placeholder="製品名・設定温度など"><label class="field">目標温度・湿度</label><div class="grid"><div><label class="field">温度</label><input id="envTargetTemp" placeholder="例：ホット 31℃"></div><div><label class="field">湿度</label><input id="envTargetHumidity" placeholder="例：60〜70％"></div></div><h3>レイアウト・用品</h3><label class="field">床材</label><input id="envSubstrate" placeholder="使用している床材"><label class="field">シェルター</label><input id="envHide" placeholder="種類・素材・設置場所"><label class="field">水入れ</label><input id="envWater" placeholder="大きさ・種類など"><label class="field">照明・UVB</label><input id="envLighting" placeholder="使用している場合"><label class="field">その他の設備・レイアウト</label><textarea id="envOther" placeholder="登り木、温湿度計、目隠しなど"></textarea><label class="field">環境メモ</label><textarea id="envNotes" placeholder="配置や変更履歴、気になることなど"></textarea><button class="btn primary full" type="submit">環境を保存</button></form></dialog>
 <dialog id="recordDialog"><button class="close" onclick="closeDialog('recordDialog')">×</button><h2 id="recordDialogTitle">飼育記録を追加</h2><form id="recordForm"><input type="hidden" id="recordId"><label class="field">個体 *</label><select id="rPet" required></select><label class="field">記録タイプ</label><select id="rType" onchange="recordFields()"><option>測定</option><option value="給餌">ごはん</option><option>脱皮</option><option>排泄</option><option>温度</option><option>湿度</option><option>お掃除</option><option>健康・通院</option><option>その他</option></select><label class="field">日時</label><input id="rDate" type="datetime-local" required min="0001-01-01T00:00" max="9999-12-31T23:59"><div id="dynamicFields"></div><label class="field">メモ</label><textarea id="rNotes" placeholder="気づいたこと、様子など"></textarea><label class="field">写真（任意）</label><input id="rPhoto" type="file" accept="image/*"><button class="btn primary full" type="submit">記録を保存</button></form></dialog>
 <dialog id="galleryDialog"><button class="close" onclick="closeDialog('galleryDialog')">×</button><h2>写真を追加</h2><form id="galleryForm"><label class="field">個体</label><select id="gPet"></select><label class="field">写真 *</label><input id="gPhoto" type="file" accept="image/*" required><img id="gPhotoPreview" class="photo-preview" hidden><label class="field">撮影日・記録日</label><input id="gDate" type="date" required min="0001-01-01" max="9999-12-31"><label class="field">タイトル</label><input id="gTitle" placeholder="例：お迎えした日、脱皮後"><label class="field">メモ</label><textarea id="gNotes" placeholder="写真についてのメモ"></textarea><button class="btn primary full" type="submit">写真を保存</button></form></dialog>
@@ -208,8 +216,10 @@ function renderEnvironment(){const el=$('environmentList');if(!db.pets.length){e
 function openRecord(type='温湿度',petId='',date='',recordId=''){if(!db.pets.length){alert('先に個体を登録してください');return}const existing=recordId?db.records.find(r=>r.id===recordId):null;$('recordForm').reset();petOptions($('rPet'));$('recordId').value=existing?.id||'';if(existing){$('rPet').value=existing.petId;$('rType').value=existing.type==='メモ'?'その他':existing.type==='温湿度'?'温度':existing.type;$('rDate').value=existing.date;$('rNotes').value=existing.notes||'';selectedRecordPhoto=existing.photo||''}else{if(petId&&db.pets.some(p=>p.id===petId))$('rPet').value=petId;const base=date?new Date(date+'T09:00:00'):new Date();$('rDate').value=new Date(base.getTime()-base.getTimezoneOffset()*60000).toISOString().slice(0,16);$('rType').value=type;selectedRecordPhoto=null}recordFields();if(existing)Object.entries(existing.fields||{}).forEach(([id,value])=>{const target=id==='fTemp'?'fHotTemp':id;const field=$(target);if(field)field.value=value});if(existing?.type==='メモ'&&$('fOther')&&!$('fOther').value)$('fOther').value=existing.notes||'';if(existing?.type==='温湿度'&&$('fHum'))$('fHum').value=existing.fields?.fHum||'';$('recordDialogTitle').textContent=existing?'飼育記録を編集':'飼育記録を追加';$('recordDialog').showModal()}
 function quickRecord(type){openRecord(type)}
 function openHomeTile(type,petId){
+ const dayKey=value=>{const d=new Date(value);return Number.isNaN(d.getTime())?'':`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+ const today=dayKey(new Date());
  const aliases=type==='温度'?['温度','温湿度']:type==='湿度'?['湿度','温湿度']:[type];
- const latest=db.records.filter(r=>r.petId===petId&&aliases.includes(r.type))
+ const latest=db.records.filter(r=>r.petId===petId&&aliases.includes(r.type)&&dayKey(r.date)===today)
   .sort((a,b)=>new Date(b.date||0)-new Date(a.date||0))[0];
  if(latest)openRecord(latest.type,petId,'',latest.id);
  else openRecord(type,petId);
@@ -303,10 +313,13 @@ function renderHome(){
  tabs.innerHTML=db.pets.map(p=>`<button class="pet-tab ${p.id===db.homeSelectedPetId?'active':''}" role="tab" aria-selected="${p.id===db.homeSelectedPetId}" onclick="selectHomePet('${p.id}')">${esc(p.name)}</button>`).join('');
  const p=db.pets.find(x=>x.id===db.homeSelectedPetId);
  el.innerHTML=p?(()=>{
-  const latest=type=>db.records.find(r=>r.petId===p.id&&r.type===type);
-  const otherCount=db.records.filter(r=>r.petId===p.id&&['その他','健康・通院','メモ'].includes(r.type)).length;
-  const w=db.records.find(r=>r.petId===p.id&&(r.type==='測定'||r.type==='体重')&&r.fields?.fWeight),l=db.records.find(r=>r.petId===p.id&&(r.type==='測定'||r.type==='長さ')&&r.fields?.fLength),food=latest('給餌'),waste=latest('排泄'),clean=latest('お掃除');
-  const tempRecords=db.records.filter(r=>r.petId===p.id&&['温度','温湿度'].includes(r.type));
+  const localDayKey=value=>{const d=new Date(value);return Number.isNaN(d.getTime())?'':`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+  const todayKey=localDayKey(new Date());
+  const todayRecords=db.records.filter(r=>r.petId===p.id&&localDayKey(r.date)===todayKey);
+  const latest=type=>todayRecords.find(r=>r.type===type);
+  const otherCount=todayRecords.filter(r=>['その他','健康・通院','メモ'].includes(r.type)).length;
+  const w=todayRecords.find(r=>(r.type==='測定'||r.type==='体重')&&r.fields?.fWeight),l=todayRecords.find(r=>(r.type==='測定'||r.type==='長さ')&&r.fields?.fLength),food=latest('給餌'),waste=latest('排泄'),clean=latest('お掃除');
+  const tempRecords=todayRecords.filter(r=>['温度','温湿度'].includes(r.type));
   const latestHot=tempRecords.find(r=>(r.fields?.fHotTemp!==''&&r.fields?.fHotTemp!=null)||(r.fields?.fTemp!==''&&r.fields?.fTemp!=null));
   const latestCool=tempRecords.find(r=>r.fields?.fCoolTemp!==''&&r.fields?.fCoolTemp!=null);
   const latestHum=db.records.find(r=>r.petId===p.id&&(['湿度','温湿度'].includes(r.type))&&r.fields?.fHum!==''&&r.fields?.fHum!=null);
@@ -316,16 +329,14 @@ function renderHome(){
    return Math.max(0,Math.round((dayKey(newer)-dayKey(older))/86400000));
   };
   const elapsedSummary=(type,phrase)=>{
-   const arr=db.records.filter(r=>r.petId===p.id&&r.type===type&&r.date).sort((a,b)=>new Date(b.date)-new Date(a.date));
+   const arr=todayRecords.filter(r=>r.type===type&&r.date).sort((a,b)=>new Date(b.date)-new Date(a.date));
    if(!arr.length)return {latest:null,main:'--',sub:'未記録'};
-   const days=calendarDayDiff(new Date(),arr[0].date);
-   const gap=arr.length>1?calendarDayDiff(arr[0].date,arr[1].date):null;
-   return {latest:arr[0],main:phrase(arr[0]),sub:`${days}日前${type==='給餌'?'に食べた':type==='脱皮'?'に脱皮':type==='排泄'?'に排泄':'にお掃除'}${gap!==null?` · 前回から${gap}日後`:''}`};
+   return {latest:arr[0],main:phrase(arr[0]),sub:'今日入力'};
   };
   const feeding=elapsedSummary('給餌',r=>r.fields?.fResult||'記録あり');
   const shedding=elapsedSummary('脱皮',r=>{
    const status=r.fields?.fShed||'';
-   return status.includes('きれい')?'🟢':status.includes('一部')?'🟡':status?'⚠️':'記録あり';
+   return status.includes('きれい')?'⭐':status.includes('一部')?'⭕':status?'⚠️':'記録あり';
   });
   const wasteSummary=elapsedSummary('排泄',r=>r.fields?.fWaste||'記録あり');
   const cleaningSummary=elapsedSummary('お掃除',r=>'済');
@@ -433,7 +444,7 @@ numberStepperObserver.observe(document.body,{childList:true,subtree:true});
  const dateInputs=[...document.querySelectorAll('input[type="date"],input[type="datetime-local"]')];
  const pad=n=>String(n).padStart(2,'0');
  const fmt=v=>v?(v.slice(0,10).replaceAll('-','/')+(v.length>10?' '+v.slice(11,16):'')):'';
- const picker=document.createElement('div');
+ const picker=document.createElement('dialog');
  picker.className='date-picker-overlay';
  picker.innerHTML=`<div class="date-picker-card" role="dialog" aria-modal="true" aria-label="日付を選択">
   <div class="date-picker-top"><div><small>DATE SELECT</small><strong id="dpSelected">日付を選択</strong></div><button type="button" class="dp-close" aria-label="閉じる">×</button></div>
@@ -475,9 +486,9 @@ numberStepperObserver.observe(document.body,{childList:true,subtree:true});
   const isDateTime=input.type==='datetime-local';
   $dp('dpTimeRow').hidden=!isDateTime;
   $dp('dpTime').value=isDateTime&&input.value.length>10?input.value.slice(11,16):'12:00';
-  render();picker.classList.add('open');
+  render();if(!picker.open)picker.showModal();
  }
- function close(){picker.classList.remove('open');active=null}
+ function close(){if(picker.open)picker.close();active=null}
  dateInputs.forEach(input=>{
   const wasRequired=input.required||input.hasAttribute('required');
   input.min=input.type==='date'?'0001-01-01':'0001-01-01T00:00';
