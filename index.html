@@ -244,6 +244,7 @@ function renderHome(){
  const p=db.pets.find(x=>x.id===db.homeSelectedPetId);
  el.innerHTML=p?(()=>{
   const latest=type=>db.records.find(r=>r.petId===p.id&&r.type===type);
+  const otherCount=db.records.filter(r=>r.petId===p.id&&['その他','健康・通院','メモ'].includes(r.type)).length;
   const w=db.records.find(r=>r.petId===p.id&&(r.type==='測定'||r.type==='体重')&&r.fields?.fWeight),l=db.records.find(r=>r.petId===p.id&&(r.type==='測定'||r.type==='長さ')&&r.fields?.fLength),food=latest('給餌'),waste=latest('排泄'),clean=latest('お掃除');
   const tempRecords=db.records.filter(r=>r.petId===p.id&&['温度','温湿度'].includes(r.type));
   const latestHot=tempRecords.find(r=>(r.fields?.fHotTemp!==''&&r.fields?.fHotTemp!=null)||(r.fields?.fTemp!==''&&r.fields?.fTemp!=null));
