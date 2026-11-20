@@ -161,7 +161,7 @@ select optgroup{background:#17243a;color:#b8f36b;font-weight:700}
 <button class="settings-row" onclick="openSettingDetail('data')"><span>💾 <b>データ管理</b><small>バックアップ・復元</small></span><strong>›</strong></button>
 <button class="settings-row" onclick="openSettingDetail('display')"><span>🎨 <b>表示設定</b><small>テーマなどの表示方法</small></span><strong>›</strong></button>
 <button class="settings-row" onclick="openSettingDetail('participants')"><span>👥 <b>共有・参加者管理</b><small>共有ノートの参加者を確認</small></span><strong>›</strong></button>
-<p class="small" style="margin-top:16px">REPTILE NOTE prototype 0.4.19</p></dialog>
+<p class="small" style="margin-top:16px">REPTILE NOTE prototype 0.4.21</p></dialog>
 <dialog id="settingDetailDialog"><button class="close" onclick="closeDialog('settingDetailDialog')">×</button><button class="btn ghost" onclick="closeDialog('settingDetailDialog');openSettings()">← 設定に戻る</button><h2 id="settingDetailTitle" style="margin-top:14px"></h2><div id="settingDetailBody"></div></dialog>
 <dialog id="ownerEditDialog"><button class="close" onclick="closeDialog('ownerEditDialog')">×</button><h2>飼い主情報を編集</h2><form id="ownerForm"><label class="field">ニックネーム</label><input id="ownerNickname" placeholder="アプリ内で表示する名前"><label class="field">年齢</label><input id="ownerAge" type="number" min="0" max="120" placeholder="例：26"><label class="field">性別</label><select id="ownerGender"><option value="">未設定</option><option>女性</option><option>男性</option><option>その他</option><option>回答しない</option></select><label class="field">SNS</label><textarea id="ownerSns" placeholder="Instagram・XなどのアカウントやURL"></textarea><button class="btn primary full">保存</button></form></dialog>
 <dialog id="hospitalEditDialog"><button class="close" onclick="closeDialog('hospitalEditDialog')">×</button><h2>病院情報を編集</h2><form id="hospitalForm"><label class="field">病院名</label><input id="hospitalName"><label class="field">電話番号</label><input id="hospitalPhone" type="tel"><label class="field">住所</label><textarea id="hospitalAddress"></textarea><label class="field">診療時間・休診日</label><textarea id="hospitalHours"></textarea><label class="field">Webサイト</label><input id="hospitalUrl" type="url" placeholder="https://"><label class="field">メモ</label><textarea id="hospitalNotes"></textarea><button class="btn primary full">保存</button></form></dialog>
@@ -200,7 +200,7 @@ function openSettingDetail(kind){
  if(kind==='notifications')html=`<div class="card"><p>誕生日やお迎え記念日などのお知らせを管理します。</p><button class="btn primary full" onclick="enableNotifications()">通知の許可を確認する</button><p class="small">通知は対応ブラウザでアプリを開いた際に予定を確認する方式です。アプリを閉じている間の通知は今後対応予定です。</p><p>現在の許可状態：<b>${('Notification' in window)?Notification.permission:'このブラウザは非対応'}</b></p></div>`;
  if(kind==='data')html=`<div class="notice">データはこのブラウザ内に保存されます。端末故障やブラウザのデータ消去に備えて、定期的にバックアップしてください。</div><button class="btn full" onclick="exportData()">⬇ データをバックアップ</button><label class="field" style="margin-top:14px">バックアップから復元</label><input type="file" id="importFile" accept="application/json"><button class="btn full" onclick="importData()">⬆ バックアップを復元</button><button class="btn danger full" style="margin-top:12px" onclick="clearData()">すべてのデータを削除</button>`;
  if(kind==='display')html=`<div class="card"><p>ライトモード（白）・ダークモードの切り替えは今後対応予定です。</p></div>`;
- if(kind==='participants')html=`<div class="notice">共有サーバーへの接続先はアプリに設定済みです。ここにはオーナーのセッショントークンだけを入力してください。トークンはこのタブを閉じるまで保持し、バックアップには含めません。</div><label class="field">オーナーのセッショントークン</label><input id="participantOwnerToken" type="password" autocomplete="off" placeholder="オーナー用のセッショントークン"><button class="btn primary full" onclick="loadParticipants()">参加者一覧を読み込む</button><div id="participantStatus" class="small" style="margin-top:10px"></div><div id="participantList"></div><button class="btn ghost full" style="margin-top:12px" onclick="clearParticipantToken()">このタブのトークンを消去</button>`;
+ if(kind==='participants')html=`<div class="notice">共有サーバーへの接続先はアプリに設定済みです。オーナーのセッショントークンを入力してください。トークンはこのタブを閉じるまで保持し、バックアップには含めません。</div><label class="field">オーナーのセッショントークン</label><input id="participantOwnerToken" type="password" autocomplete="off" placeholder="オーナー用のセッショントークン"><button class="btn primary full" onclick="loadParticipants()">参加者一覧を読み込む</button><div id="participantStatus" class="small" style="margin-top:10px"></div><div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px">🔗 共有リンクを発行</h3><label class="field">参加者の権限</label><select id="sharePermission"><option value="viewer">閲覧のみ</option><option value="editor">編集可能</option></select><label class="field">有効期限</label><select id="shareExpiry"><option value="7">7日間</option><option value="30" selected>30日間</option><option value="90">90日間</option><option value="365">1年間</option><option value="never">無期限</option></select><label class="field">利用回数上限</label><select id="shareMaxUses"><option value="1">1回</option><option value="5">5回</option><option value="10" selected>10回</option><option value="50">50回</option><option value="100">100回</option><option value="never">無制限</option></select><button class="btn primary full" onclick="createShareLink()">共有リンクを発行する</button><div id="shareLinkStatus" class="small" style="margin-top:9px"></div><div id="shareLinkResult"></div></div><div id="participantList"></div><button class="btn ghost full" style="margin-top:12px" onclick="clearParticipantToken()">このタブのトークンを消去</button>`;
  $('settingDetailBody').innerHTML=html;if(kind==='participants')$('participantOwnerToken').value=sessionStorage.getItem('reptileNoteOwnerSessionToken')||'';closeDialog('settingsDialog');$('settingDetailDialog').showModal();
 }
 async function loadParticipants(){
@@ -219,6 +219,30 @@ async function loadParticipants(){
   list.innerHTML=participants.length?participants.map(p=>`<div class="card" style="margin-top:9px"><div class="row"><strong>${esc(p.displayName||'ゲスト')}</strong><span class="tag">${p.isOwner?'オーナー':p.role==='editor'?'編集可能':p.role==='viewer'?'閲覧のみ':'セッションなし'}</span></div><div class="small" style="margin-top:7px">参加：${p.joinedAt?new Date(p.joinedAt).toLocaleString('ja-JP'):'不明'}</div><div class="small">最終アクセス：${p.lastSeenAt?new Date(p.lastSeenAt).toLocaleString('ja-JP'):'未記録'}</div></div>`).join(''):'<div class="empty">参加者はいません。</div>';
  }catch(error){status.textContent=`取得できませんでした：${error.message}`;list.innerHTML='';}
 }
+async function createShareLink(){
+ const token=$('participantOwnerToken')?.value.trim();
+ const status=$('shareLinkStatus'),resultBox=$('shareLinkResult');
+ if(!token){status.textContent='先にオーナーのセッショントークンを入力してください。';return}
+ sessionStorage.setItem('reptileNoteOwnerSessionToken',token);
+ const permission=$('sharePermission').value;
+ const expiryValue=$('shareExpiry').value;
+ const maxValue=$('shareMaxUses').value;
+ const expiresInDays=expiryValue==='never'?null:Number(expiryValue);
+ const maxUses=maxValue==='never'?null:Number(maxValue);
+ status.textContent='共有リンクを発行中…';resultBox.innerHTML='';
+ try{
+  const response=await fetch(GUEST_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'create_share_link',token,permission,expiresInDays,maxUses})});
+  const data=await response.json();
+  if(!response.ok||data.status!=='ok')throw new Error(data.error||`HTTP ${response.status}`);
+  const shareToken=data.shareToken||data.share_token||data.token;
+  if(!shareToken)throw new Error('発行結果に共有トークンがありません。');
+  const shareUrl=new URL(location.href);shareUrl.search='';shareUrl.hash='';shareUrl.searchParams.set('share',shareToken);
+  status.textContent='共有リンクを発行しました。このリンクは必要な相手にだけ送ってください。';
+  resultBox.innerHTML=`<label class="field">共有URL（発行時のみ表示）</label><textarea id="issuedShareUrl" readonly rows="3"></textarea><button class="btn full" onclick="copyIssuedShareUrl()">URLをコピー</button><div class="small" style="margin-top:7px">権限：${permission==='editor'?'編集可能':'閲覧のみ'} · 有効期限：${expiresInDays===null?'無期限':expiresInDays+'日'} · 利用上限：${maxUses===null?'無制限':maxUses+'回'}</div>`;
+  $('issuedShareUrl').value=shareUrl.toString();
+ }catch(error){status.textContent=`発行できませんでした：${error.message}`;}
+}
+async function copyIssuedShareUrl(){const field=$('issuedShareUrl');if(!field)return;field.select();try{await navigator.clipboard.writeText(field.value);alert('共有URLをコピーしました。')}catch(e){document.execCommand('copy');alert('共有URLをコピーしました。')}}
 function clearParticipantToken(){sessionStorage.removeItem('reptileNoteOwnerSessionToken');if($('participantOwnerToken'))$('participantOwnerToken').value='';if($('participantStatus'))$('participantStatus').textContent='このタブのトークンを消去しました。';if($('participantList'))$('participantList').innerHTML='';}
 function editOwner(){const x=db.owner||{};$('ownerNickname').value=x.nickname||x.name||'';$('ownerAge').value=x.age||'';$('ownerGender').value=x.gender||'';$('ownerSns').value=x.sns||'';$('ownerEditDialog').showModal()}
 function editHospital(){const x=db.hospital||{};['Name','Phone','Address','Hours','Url','Notes'].forEach(k=>{const id='hospital'+k;$(id).value=x[k.toLowerCase()]||''});$('hospitalEditDialog').showModal()}
