@@ -11,3 +11,12 @@
 注意:
 - 予定の削除APIは未実装です。画面で削除してもクラウド側には残ります。
 - テスト予定や既存予定を一括同期する前に内容を確認してください。
+
+
+## v0.4.32
+- Owner/guest session tokens are restored from browser local storage; guest sessions persist across tabs/restarts.
+- Initial local pets, records and events are automatically migrated once per workspace.
+- Cloud data is fetched automatically on startup; owner local-only entries and photo data are preserved during merge.
+- Share management no longer asks users to paste the owner token; participant list and share-link actions use the current session automatically.
+- Existing edit/add handlers continue to sync pets, records and events automatically.
+- Deletion sync and photo upload are not included in this version.
