@@ -291,15 +291,20 @@ async function joinSharedWorkspace(){
   const response=await fetch(GUEST_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'join_workspace',shareToken:pendingShareToken,displayName:name})});
   const data=await response.json();
   if(!response.ok||data.status!=='ok')throw new Error(data.error||`HTTP ${response.status}`);
-  const guestToken=data.sessionToken||data.token;
+  // join_guest_workspace RPC response is nested: workspace / participant / session
+  const guestToken=data.session?.token||data.sessionToken||data.token;
   if(!guestToken)throw new Error('参加セッショントークンが返されませんでした。');
+  const workspaceId=data.workspace?.id||data.workspaceId||data.workspace_id||'';
+  const role=data.session?.role||data.role||'viewer';
+  const displayName=data.participant?.displayName||data.participant?.display_name||data.displayName||name;
+  const workspaceName=data.workspace?.name||data.workspaceName||'共有ノート';
   sessionStorage.setItem('reptileNoteGuestSessionToken',guestToken);
-  sessionStorage.setItem('reptileNoteGuestWorkspaceId',data.workspaceId||data.workspace_id||data.workspace?.id||'');
-  sessionStorage.setItem('reptileNoteGuestRole',data.role||'viewer');
-  sessionStorage.setItem('reptileNoteGuestDisplayName',data.displayName||name);
+  sessionStorage.setItem('reptileNoteGuestWorkspaceId',workspaceId);
+  sessionStorage.setItem('reptileNoteGuestRole',role);
+  sessionStorage.setItem('reptileNoteGuestDisplayName',displayName);
   pendingShareToken='';
   history.replaceState({},'',location.pathname);
-  status.textContent=`参加しました。${data.workspaceName||data.workspace?.name||'共有ノート'} に ${data.displayName||name} として参加しています。`;
+  status.textContent=`参加しました。${workspaceName} に ${displayName} として参加しています。`;
   button.textContent='参加しました';
   button.disabled=true;
   const note=document.createElement('p');note.className='notice';note.textContent='参加登録は完了しました。共有ノートの飼育データを表示・同期する機能は次の段階で接続します。';
