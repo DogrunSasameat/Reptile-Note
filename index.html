@@ -361,7 +361,7 @@ async function syncRecordToCloud(record,quiet=false){
  const token=activeSharedToken();if(!token)return {skipped:true};
  if(isSharedViewer()){if(!quiet)alert('閲覧のみの共有ノートでは保存できません。');return {skipped:true};}
  try{
-  const data=await guestApi({action:'save_record',token,record:{id:record.id,petId:record.petId,type:record.type,date:record.date,fields:record.fields||{},notes:record.notes||''}});
+  const data=await guestApi({action:'save_record',token,record:{id:record.id,petId:record.petId,type:record.type,date:record.date?new Date(record.date).toISOString():record.date,fields:{...(record.fields||{}),__rnTimezoneVersion:2},notes:record.notes||''}});
   if(!quiet)alert('飼育記録を共有サーバーに保存しました。');return data;
  }catch(error){console.error('Cloud record sync failed:',error);if(!quiet)alert(`共有サーバーへの保存に失敗しました。端末内の記録は保存されています。\\n${error.message}`);return {error};}
 }
@@ -372,9 +372,14 @@ async function loadSharedRecordsFromCloud(){
   const rows=Array.isArray(data.records)?data.records:[];
   db.records=rows.map(row=>{
    const stored=row.data&&typeof row.data==='object'?row.data:{};
-   const fields=stored.fields&&typeof stored.fields==='object'?stored.fields:{};
+   const rawFields=stored.fields&&typeof stored.fields==='object'?stored.fields:{};
+   const isJstFixed=rawFields.__rnTimezoneVersion===2;
+   const fields={...rawFields};
+   delete fields.__rnTimezoneVersion;
    const date=new Date(row.recorded_at);
-   const localDate=Number.isNaN(date.getTime())?String(row.recorded_at||''):new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);
+   // 旧バージョンはJSTの時刻をUTCとして保存していたため、表示時だけ9時間補正する。
+   const adjustedTime=!isJstFixed&&!Number.isNaN(date.getTime())?date.getTime()-9*60*60*1000:date.getTime();
+   const localDate=Number.isNaN(date.getTime())?String(row.recorded_at||''):new Date(adjustedTime-date.getTimezoneOffset()*60000).toISOString().slice(0,16);
    return {id:row.id,petId:row.pet_id,type:row.record_type,date:localDate,fields,notes:row.memo||'',photo:''};
   });
   return true;
