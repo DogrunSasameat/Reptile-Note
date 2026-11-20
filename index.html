@@ -253,7 +253,7 @@ function openSettingDetail(kind){
  if(kind==='notifications')html=`<div class="card"><p>誕生日やお迎え記念日などのお知らせを管理します。</p><button class="btn primary full" onclick="enableNotifications()">通知の許可を確認する</button><p class="small">通知は対応ブラウザでアプリを開いた際に予定を確認する方式です。アプリを閉じている間の通知は今後対応予定です。</p><p>現在の許可状態：<b>${('Notification' in window)?Notification.permission:'このブラウザは非対応'}</b></p></div>`;
  if(kind==='data')html=`<div class="notice">データはこのブラウザ内に保存されます。端末故障やブラウザのデータ消去に備えて、定期的にバックアップしてください。</div><button class="btn full" onclick="exportData()">⬇ データをバックアップ</button><label class="field" style="margin-top:14px">バックアップから復元</label><input type="file" id="importFile" accept="application/json"><button class="btn full" onclick="importData()">⬆ バックアップを復元</button><button class="btn danger full" style="margin-top:12px" onclick="clearData()">すべてのデータを削除</button>`;
  if(kind==='display')html=`<div class="card"><p>ライトモード（白）・ダークモードの切り替えは今後対応予定です。</p></div>`;
- if(kind==='participants')html=`<div class="notice">共有サーバーへの接続先はアプリに設定済みです。オーナーのセッショントークンを入力してください。トークンはこのタブを閉じるまで保持し、バックアップには含めません。</div><label class="field">オーナーのセッショントークン</label><input id="participantOwnerToken" type="password" autocomplete="off" placeholder="オーナー用のセッショントークン"><button class="btn primary full" onclick="loadParticipants()">参加者一覧を読み込む</button><div id="participantStatus" class="small" style="margin-top:10px"></div><button class="btn full" style="margin-top:8px" onclick="syncAllLocalPetsToCloud()">この端末の個体を共有サーバーへ同期</button><div id="cloudPetSyncStatus" class="small" style="margin-top:7px"></div><button class="btn full" style="margin-top:8px" onclick="syncAllLocalRecordsToCloud()">この端末の飼育記録を共有サーバーへ同期</button><div id="cloudRecordSyncStatus" class="small" style="margin-top:7px"></div><div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px">🔗 共有リンクを発行</h3><label class="field">参加者の権限</label><select id="sharePermission"><option value="viewer">閲覧のみ</option><option value="editor">編集可能</option></select><label class="field">有効期限</label><select id="shareExpiry"><option value="7">7日間</option><option value="30" selected>30日間</option><option value="90">90日間</option><option value="365">1年間</option><option value="never">無期限</option></select><label class="field">利用回数上限</label><select id="shareMaxUses"><option value="1">1回</option><option value="5">5回</option><option value="10" selected>10回</option><option value="50">50回</option><option value="100">100回</option><option value="never">無制限</option></select><button class="btn primary full" onclick="createShareLink()">共有リンクを発行する</button><div id="shareLinkStatus" class="small" style="margin-top:9px"></div><div id="shareLinkResult"></div></div><div id="participantList"></div><button class="btn ghost full" style="margin-top:12px" onclick="clearParticipantToken()">このタブのトークンを消去</button>`;
+ if(kind==='participants')html=`<div class="notice">共有サーバーへの接続先はアプリに設定済みです。オーナーのセッショントークンを入力してください。トークンはこのタブを閉じるまで保持し、バックアップには含めません。</div><label class="field">オーナーのセッショントークン</label><input id="participantOwnerToken" type="password" autocomplete="off" placeholder="オーナー用のセッショントークン"><button class="btn primary full" onclick="loadParticipants()">参加者一覧を読み込む</button><div id="participantStatus" class="small" style="margin-top:10px"></div><button class="btn full" style="margin-top:8px" onclick="syncAllLocalPetsToCloud()">この端末の個体を共有サーバーへ同期</button><div id="cloudPetSyncStatus" class="small" style="margin-top:7px"></div><button class="btn full" style="margin-top:8px" onclick="syncAllLocalRecordsToCloud()">この端末の飼育記録を共有サーバーへ同期</button><div id="cloudRecordSyncStatus" class="small" style="margin-top:7px"></div><button class="btn full" style="margin-top:8px" onclick="syncAllLocalEventsToCloud()">この端末の予定を共有サーバーへ同期</button><div id="cloudEventSyncStatus" class="small" style="margin-top:7px"></div><div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px">🔗 共有リンクを発行</h3><label class="field">参加者の権限</label><select id="sharePermission"><option value="viewer">閲覧のみ</option><option value="editor">編集可能</option></select><label class="field">有効期限</label><select id="shareExpiry"><option value="7">7日間</option><option value="30" selected>30日間</option><option value="90">90日間</option><option value="365">1年間</option><option value="never">無期限</option></select><label class="field">利用回数上限</label><select id="shareMaxUses"><option value="1">1回</option><option value="5">5回</option><option value="10" selected>10回</option><option value="50">50回</option><option value="100">100回</option><option value="never">無制限</option></select><button class="btn primary full" onclick="createShareLink()">共有リンクを発行する</button><div id="shareLinkStatus" class="small" style="margin-top:9px"></div><div id="shareLinkResult"></div></div><div id="participantList"></div><button class="btn ghost full" style="margin-top:12px" onclick="clearParticipantToken()">このタブのトークンを消去</button>`;
  $('settingDetailBody').innerHTML=html;if(kind==='participants')$('participantOwnerToken').value=sessionStorage.getItem('reptileNoteOwnerSessionToken')||localStorage.getItem(OWNER_TOKEN_KEY)||'';closeDialog('settingsDialog');$('settingDetailDialog').showModal();
 }
 async function loadParticipants(){
@@ -395,6 +395,75 @@ async function syncAllLocalRecordsToCloud(){
  for(const record of db.records){const result=await syncRecordToCloud(record,true);if(result&&!result.error&&!result.skipped)ok++;else fail++;}
  status.textContent=`同期完了：${ok}件成功${fail?`・${fail}件失敗`:''}。写真は別途対応予定です。`;
 }
+
+function eventDateForCloud(value){
+ const d=new Date(value);
+ if(Number.isNaN(d.getTime()))throw new Error('予定日時が正しくありません。');
+ return d.toISOString();
+}
+function eventFromCloud(row){
+ const d=row.data&&typeof row.data==='object'?row.data:{};
+ const date=new Date(row.starts_at);
+ const localDate=Number.isNaN(date.getTime())?String(row.starts_at||''):new Date(date.getTime()-date.getTimezoneOffset()*60000).toISOString().slice(0,16);
+ return {
+  id:row.id,petId:row.pet_id||'',title:row.title||'',
+  date:localDate,notes:d.memo||'',repeat:row.recurrence||null,
+  done:!!d.done
+ };
+}
+async function syncEventToCloud(event,quiet=false){
+ const token=activeSharedToken();if(!token)return {skipped:true};
+ if(isSharedViewer()){if(!quiet)alert('閲覧のみの共有ノートでは保存できません。');return {skipped:true};}
+ try{
+  const data=await guestApi({
+   action:'save_event',token,
+   event:{
+    id:event.id,petId:event.petId||'',title:event.title,
+    type:event.type||'予定',startsAt:eventDateForCloud(event.date),
+    endsAt:event.endsAt?eventDateForCloud(event.endsAt):null,
+    recurrence:event.repeat||null,
+    data:{memo:event.notes||'',done:!!event.done}
+   }
+  });
+  if(!quiet)alert('予定を共有サーバーに保存しました。');
+  return data;
+ }catch(error){
+  console.error('Cloud event sync failed:',error);
+  if(!quiet)alert(`共有サーバーへの予定保存に失敗しました。端末内の予定は保持されています。\n${error.message}`);
+  return {error};
+ }
+}
+async function loadSharedEventsFromCloud(){
+ const token=activeSharedToken();if(!token)return false;
+ try{
+  const data=await guestApi({action:'list_events',token});
+  const rows=Array.isArray(data.events)?data.events:[];
+  const remote=rows.map(eventFromCloud);
+  if(sessionStorage.getItem('reptileNoteGuestSessionToken')){
+   db.events=remote;
+  }else{
+   const byId=new Map(remote.map(e=>[e.id,e]));
+   const localOnly=db.events.filter(e=>!byId.has(e.id));
+   db.events=[...remote,...localOnly];
+  }
+  return true;
+ }catch(error){console.error('Cloud event load failed:',error);throw error;}
+}
+async function syncAllLocalEventsToCloud(){
+ const token=$('participantOwnerToken')?.value.trim()||activeSharedToken();
+ const status=$('cloudEventSyncStatus');
+ if(!token){status.textContent='先にオーナーのセッショントークンを入力してください。';return;}
+ sessionStorage.setItem('reptileNoteOwnerSessionToken',token);
+ localStorage.setItem(OWNER_TOKEN_KEY,token);
+ if(!db.events.length){status.textContent='同期する予定はありません。';return;}
+ status.textContent='予定を同期中…';let ok=0,fail=0;
+ for(const event of db.events){
+  const result=await syncEventToCloud(event,true);
+  if(result&&!result.error&&!result.skipped)ok++;else fail++;
+ }
+ status.textContent=`同期完了：${ok}件成功${fail?`・${fail}件失敗`:''}。`;
+}
+
 async function loadSharedPetsFromCloud(showMessage=false){
  const token=sessionStorage.getItem('reptileNoteGuestSessionToken')||sessionStorage.getItem('reptileNoteOwnerSessionToken')||localStorage.getItem(OWNER_TOKEN_KEY)||'';
  if(!token)return false;
@@ -403,7 +472,7 @@ async function loadSharedPetsFromCloud(showMessage=false){
   const rows=Array.isArray(data.pets)?data.pets:[];
   const remote=rows.map(row=>{const d=row.data&&typeof row.data==='object'?row.data:{};return {id:row.id,name:row.name||'',species:row.species||'',sex:d.sex||'不明',arrival:d.arrival||'',birthday:d.birthday||'',morph:d.morph||'',notes:d.notes||'',photo:'',environment:d.environment||{}}});
   // ゲスト参加中は共有ノートの個体一覧を表示。端末内の既存バックアップは上書きしない。
-  db.pets=remote;await loadSharedRecordsFromCloud();renderAll();
+  db.pets=remote;await loadSharedRecordsFromCloud();await loadSharedEventsFromCloud();renderAll();
   if(showMessage)alert(`${remote.length}件の個体情報を共有ノートから読み込みました。`);
   return true;
  }catch(error){console.error('Cloud pet load failed:',error);if(showMessage)alert(`共有ノートを読み込めませんでした。\n${error.message}`);return false;}
@@ -451,7 +520,22 @@ function deleteRecord(id){if(confirm('この記録を削除しますか？')){db
 function toggleRepeatOptions(){$('repeatOptions').hidden=!$('eRepeat').checked;if(!$('repeatOptions').hidden)renderRepeatFields()}
 function renderRepeatFields(){const t=$('eRepeatType').value;if(t==='weekday')$('repeatFields').innerHTML='<div class="grid"><div><label class="field">何週目</label><select id="eRepeatNth"><option value="1">第1</option><option value="2">第2</option><option value="3">第3</option><option value="4">第4</option><option value="5">第5</option><option value="-1">最終</option></select></div><div><label class="field">曜日</label><select id="eRepeatWeekday"><option value="0">日曜日</option><option value="1">月曜日</option><option value="2">火曜日</option><option value="3">水曜日</option><option value="4">木曜日</option><option value="5">金曜日</option><option value="6">土曜日</option></select></div></div>';else if(t==='day')$('repeatFields').innerHTML='<label class="field">毎月何日</label><select id="eRepeatDay">'+Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}日</option>`).join('')+'</select>';else $('repeatFields').innerHTML='<p class="small">毎月の最終日（28〜31日）に表示します。</p>'}
 function openEventForm(date='',eventId=''){petOptions($('ePet'));$('eventForm').reset();$('eId').value='';$('eventDialogTitle').textContent=eventId?'予定を編集':'予定を追加';const base=date?new Date(date+'T09:00:00'):new Date();$('eDate').value=new Date(base.getTime()-base.getTimezoneOffset()*60000).toISOString().slice(0,16);$('repeatOptions').hidden=true;$('repeatFields').innerHTML='';if(eventId){const ev=db.events.find(x=>x.id===eventId);if(ev){$('eId').value=ev.id;$('ePet').value=ev.petId||'';$('eTitle').value=ev.title;$('eDate').value=ev.date;$('eNotes').value=ev.notes||'';$('eRepeat').checked=!!ev.repeat;if(ev.repeat){$('eRepeatType').value=ev.repeat.type;$('repeatOptions').hidden=false;renderRepeatFields();if(ev.repeat.type==='day')$('eRepeatDay').value=ev.repeat.day;if(ev.repeat.type==='weekday'){$('eRepeatNth').value=ev.repeat.nth;$('eRepeatWeekday').value=ev.repeat.weekday}}}}else{$('eRepeat').checked=false;$('eRepeatType').value='day'}$('eventDialog').showModal()}
-$('eventForm').onsubmit=e=>{e.preventDefault();let repeat=null;if($('eRepeat').checked){const type=$('eRepeatType').value;repeat={type};if(type==='day')repeat.day=Number($('eRepeatDay').value);if(type==='weekday'){repeat.nth=Number($('eRepeatNth').value);repeat.weekday=Number($('eRepeatWeekday').value)}}const id=$('eId').value;const data={petId:$('ePet').value,title:$('eTitle').value,date:$('eDate').value,notes:$('eNotes').value,repeat,done:false};if(id){const ev=db.events.find(x=>x.id===id);if(ev)Object.assign(ev,data)}else db.events.push({id:crypto.randomUUID(),...data});closeDialog('eventDialog');save()};
+$('eventForm').onsubmit=async e=>{
+ e.preventDefault();
+ let repeat=null;
+ if($('eRepeat').checked){
+  const type=$('eRepeatType').value;repeat={type};
+  if(type==='day')repeat.day=Number($('eRepeatDay').value);
+  if(type==='weekday'){repeat.nth=Number($('eRepeatNth').value);repeat.weekday=Number($('eRepeatWeekday').value);}
+ }
+ const id=$('eId').value;
+ const data={petId:$('ePet').value,title:$('eTitle').value,date:$('eDate').value,notes:$('eNotes').value,repeat,done:false};
+ let event;
+ if(id){event=db.events.find(x=>x.id===id);if(event)Object.assign(event,data);}
+ else{event={id:crypto.randomUUID(),...data};db.events.push(event);}
+ closeDialog('eventDialog');save();
+ if(event&&activeSharedToken())await syncEventToCloud(event,false);
+};
 function eventOccursOn(ev,ds){const base=dateKey(ev.date),date=new Date(ds+'T12:00:00'),start=new Date(base+'T12:00:00');if(ds===base)return true;if(!ev.repeat||ds<base||date.getDate()===0)return false;const r=ev.repeat;if(date.getFullYear()<start.getFullYear()||(date.getFullYear()===start.getFullYear()&&date.getMonth()<start.getMonth()))return false;if(r.type==='last')return date.getDate()===new Date(date.getFullYear(),date.getMonth()+1,0).getDate();if(r.type==='day')return date.getDate()===Math.min(Number(r.day)||start.getDate(),new Date(date.getFullYear(),date.getMonth()+1,0).getDate());if(r.type==='weekday'){const nth=Number(r.nth),weekday=Number(r.weekday);if(date.getDay()!==weekday)return false;if(nth===-1)return date.getDate()+7>new Date(date.getFullYear(),date.getMonth()+1,0).getDate();return Math.floor((date.getDate()-1)/7)+1===nth}return false}
 function eventOccurrencesBetween(start,end){const out=[];const cursor=new Date(start.getFullYear(),start.getMonth(),1);const limit=new Date(end.getFullYear(),end.getMonth()+1,0);while(cursor<=limit){const last=new Date(cursor.getFullYear(),cursor.getMonth()+1,0).getDate();for(let day=1;day<=last;day++){const ds=`${cursor.getFullYear()}-${String(cursor.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;if(new Date(ds+'T23:59:59')<start||new Date(ds+'T00:00:00')>end)continue;db.events.forEach(ev=>{if(eventOccursOn(ev,ds)){const time=ev.date.slice(10);out.push({...ev,occurrenceDate:ds,occurrenceId:ev.id+'@'+ds,date:ds+time})}})}cursor.setMonth(cursor.getMonth()+1)}return out}
 function dateKey(value){return String(value||'').slice(0,10)}
@@ -642,7 +726,7 @@ function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'app
 function importData(){const f=$('importFile').files[0];if(!f){alert('バックアップファイルを選択してください');return}const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x.pets)||!Array.isArray(x.records)||!Array.isArray(x.events))throw 0;if(confirm('現在のデータを置き換えて復元しますか？')){db=x;save();closeDialog('settingsDialog');alert('復元しました')}}catch(e){alert('ファイル形式が正しくありません')}};r.readAsText(f)}
 function clearData(){if(confirm('すべての個体・記録・予定を削除します。よろしいですか？')){db={pets:[],records:[],events:[],galleryPhotos:[],owner:{},hospital:{}};save();closeDialog('settingsDialog')}}
 async function enableNotifications(){if(!('Notification'in window)){alert('このブラウザは通知に対応していません');return}const p=await Notification.requestPermission();if(p==='granted'){alert('通知を許可しました。アプリを開いた際に今日・明日の誕生日とお迎え記念日をお知らせします。');checkAnniversaryNotifications()}else alert('通知は許可されませんでした')}
-load();renderAll();checkAnniversaryNotifications();checkShareInvite();if(sessionStorage.getItem('reptileNoteGuestSessionToken'))loadSharedPetsFromCloud(false);else maybeShowFirstSetup();
+load();renderAll();checkAnniversaryNotifications();checkShareInvite();if(sessionStorage.getItem('reptileNoteGuestSessionToken'))loadSharedPetsFromCloud(false);else if(localStorage.getItem(OWNER_TOKEN_KEY)||sessionStorage.getItem('reptileNoteOwnerSessionToken'))loadSharedEventsFromCloud().then(()=>renderAll()).catch(error=>console.error('Shared events refresh failed:',error));else maybeShowFirstSetup();
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
 function enhanceNumberSteppers(root=document){
