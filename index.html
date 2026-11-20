@@ -262,49 +262,9 @@ function openSettingDetail(kind){
  if(kind==='notifications')html=`<div class="card"><p>誕生日やお迎え記念日などのお知らせを管理します。</p><button class="btn primary full" onclick="enableNotifications()">通知の許可を確認する</button><p class="small">通知は対応ブラウザでアプリを開いた際に予定を確認する方式です。アプリを閉じている間の通知は今後対応予定です。</p><p>現在の許可状態：<b>${('Notification' in window)?Notification.permission:'このブラウザは非対応'}</b></p></div>`;
  if(kind==='data')html=`<div class="notice">データはこのブラウザに保存され、共有ノートではクラウドにも自動同期されます。端末故障やブラウザのデータ消去に備えて、定期的にバックアップしてください。</div><button class="btn full" onclick="exportData()">⬇ データをバックアップ</button><label class="field" style="margin-top:14px">バックアップから復元</label><input type="file" id="importFile" accept="application/json"><button class="btn full" onclick="importData()">⬆ バックアップを復元</button><button class="btn danger full" style="margin-top:12px" onclick="clearData()">すべてのデータを削除</button>`;
  if(kind==='display')html=`<div class="card"><p>ライトモード（白）・ダークモードの切り替えは今後対応予定です。</p></div>`;
- if(kind==='participants')html=`${!activeSharedToken()&&(db.pets.length||db.records.length||db.events.length||db.galleryPhotos.length)?`<div class="card" style="border:1px solid var(--accent,#b8f45b);margin-bottom:12px"><h3 style="margin:0 0 8px">📦 既存ノートをクラウドに移行</h3><p class="small">この端末に保存されている個体・記録・予定・写真を、新しい共有ノートへコピーします。元の端末内データは削除しません。</p><button class="btn primary full" onclick="migrateExistingNotebook()">既存データをクラウドへ移行</button><div id="migrationStatus" class="small" style="margin-top:8px"></div></div>`:''}<div class="notice">このノートは自動的にクラウド同期されます。セッショントークンはこのブラウザに保存され、通常の操作で入力する必要はありません。端末を共有する場合はログアウト・共有解除を行ってください。</div><div class="card" style="margin-top:10px"><div class="row"><strong>クラウド同期</strong><span class="tag" id="cloudSyncBadge">自動同期</span></div><div id="cloudSyncStatus" class="small" style="margin-top:7px">このノートのデータは自動で同期されます。</div></div><button class="btn primary full" style="margin-top:10px" onclick="loadParticipants()">参加者一覧を更新</button><div id="participantStatus" class="small" style="margin-top:10px"></div><div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px">🔗 共有リンクを発行</h3><label class="field">参加者の権限</label><select id="sharePermission"><option value="viewer">閲覧のみ</option><option value="editor">編集可能</option></select><label class="field">有効期限</label><select id="shareExpiry"><option value="7">7日間</option><option value="30" selected>30日間</option><option value="90">90日間</option><option value="365">1年間</option><option value="never">無期限</option></select><label class="field">利用回数上限</label><select id="shareMaxUses"><option value="1">1回</option><option value="5">5回</option><option value="10" selected>10回</option><option value="50">50回</option><option value="100">100回</option><option value="never">無制限</option></select><button class="btn primary full" onclick="createShareLink()">共有リンクを発行する</button><div id="shareLinkStatus" class="small" style="margin-top:9px"></div><div id="shareLinkResult"></div></div><div id="participantList"></div><button class="btn ghost full" style="margin-top:12px" onclick="clearParticipantToken()">この端末の共有セッションを解除</button>`;
+ if(kind==='participants')html=`<div class="notice">このノートは自動的にクラウド同期されます。セッショントークンはこのブラウザに保存され、通常の操作で入力する必要はありません。端末を共有する場合はログアウト・共有解除を行ってください。</div><div class="card" style="margin-top:10px"><div class="row"><strong>クラウド同期</strong><span class="tag" id="cloudSyncBadge">自動同期</span></div><div id="cloudSyncStatus" class="small" style="margin-top:7px">このノートのデータは自動で同期されます。</div></div><button class="btn primary full" style="margin-top:10px" onclick="loadParticipants()">参加者一覧を更新</button><div id="participantStatus" class="small" style="margin-top:10px"></div><div class="card" style="margin-top:14px"><h3 style="margin:0 0 10px">🔗 共有リンクを発行</h3><label class="field">参加者の権限</label><select id="sharePermission"><option value="viewer">閲覧のみ</option><option value="editor">編集可能</option></select><label class="field">有効期限</label><select id="shareExpiry"><option value="7">7日間</option><option value="30" selected>30日間</option><option value="90">90日間</option><option value="365">1年間</option><option value="never">無期限</option></select><label class="field">利用回数上限</label><select id="shareMaxUses"><option value="1">1回</option><option value="5">5回</option><option value="10" selected>10回</option><option value="50">50回</option><option value="100">100回</option><option value="never">無制限</option></select><button class="btn primary full" onclick="createShareLink()">共有リンクを発行する</button><div id="shareLinkStatus" class="small" style="margin-top:9px"></div><div id="shareLinkResult"></div></div><div id="participantList"></div><button class="btn ghost full" style="margin-top:12px" onclick="clearParticipantToken()">この端末の共有セッションを解除</button>`;
  $('settingDetailBody').innerHTML=html;closeDialog('settingsDialog');$('settingDetailDialog').showModal();if(kind==='participants'){loadParticipants().catch(()=>{});updateCloudSyncStatus('同期状態を確認中…')}
 }
-async function migrateExistingNotebook(){
- const status=$('migrationStatus');
- if(activeSharedToken()){if(status)status.textContent='この端末には既にノートセッションがあります。';return;}
- const counts={pets:db.pets.length,records:db.records.length,events:db.events.length,photos:db.galleryPhotos.length};
- if(!confirm(`この端末の既存データを新しいクラウドノートへコピーします。\n個体 ${counts.pets}件・記録 ${counts.records}件・予定 ${counts.events}件・写真 ${counts.photos}件\n\n元の端末内データは残します。続けますか？`))return;
- const name=(db.pets.length?`${db.pets[0].name||'わが家'}の飼育ノート`:'わが家の飼育ノート').slice(0,80);
- const setStatus=m=>{if(status)status.textContent=m;};
- try{
-  setStatus('クラウドノートを作成しています…');
-  const created=await guestApi({action:'create_workspace',name});
-  const token=created.session?.token||created.sessionToken||created.token;
-  const workspaceId=created.workspace?.id||created.workspace_id;
-  if(!token||!workspaceId)throw new Error('ノート作成結果に必要な情報がありません。');
-  localStorage.setItem(OWNER_TOKEN_KEY,token);
-  localStorage.setItem(OWNER_WORKSPACE_KEY,JSON.stringify({id:workspaceId,name:created.workspace?.name||name}));
-  sessionStorage.setItem('reptileNoteOwnerSessionToken',token);
-  let done={pets:0,records:0,events:0,photos:0},failed=[];
-  for(const pet of db.pets){setStatus(`個体情報を移行中… ${done.pets+1}/${counts.pets}`);const r=await syncPetToCloud(pet,true);if(r?.error||r?.skipped)failed.push(`個体:${pet.name||pet.id}`);else done.pets++;}
-  for(const record of db.records){setStatus(`飼育記録を移行中… ${done.records+1}/${counts.records}`);const r=await syncRecordToCloud(record,true);if(r?.error||r?.skipped)failed.push(`記録:${record.type||record.id}`);else done.records++;}
-  for(const event of db.events){setStatus(`予定を移行中… ${done.events+1}/${counts.events}`);const r=await syncEventToCloud(event,true);if(r?.error||r?.skipped)failed.push(`予定:${event.title||event.id}`);else done.events++;}
-  for(const photo of db.galleryPhotos){
-   if(photo.cloud){done.photos++;continue;}
-   if(typeof photo.photo!=='string'||!photo.photo.startsWith('data:image/')){failed.push(`写真:${photo.title||photo.id}（画像データ形式を確認できません）`);continue;}
-   try{
-    setStatus(`ギャラリー写真を移行中… ${done.photos+1}/${counts.photos}`);
-    const result=await guestApi({action:'upload_photo',token,photo:{petId:photo.petId||'',takenAt:photo.date?new Date(photo.date+'T12:00:00').toISOString():null,title:photo.title||'',memo:photo.notes||'',visibility:photo.visibility==='shared'?'shared':'private',dataUrl:photo.photo}});
-    const row=result.photo||{};
-    if(!row.id)throw new Error('写真の保存結果を確認できません');
-    photo.id=row.id;photo.cloud=true;photo.storagePath=row.storage_path||'';photo.visibility=row.visibility||photo.visibility||'private';
-    done.photos++;localStorage.setItem(KEY,JSON.stringify(db));
-   }catch(error){failed.push(`写真:${photo.title||photo.id}（${error.message}）`);}
-  }
-  localStorage.setItem(KEY,JSON.stringify(db));
-  await bootstrapCloudSync();
-  if(failed.length){setStatus(`移行は一部完了しました。成功：個体${done.pets}・記録${done.records}・予定${done.events}・写真${done.photos}。未完了：${failed.join('、')}。この端末のデータは残っています。`);}
-  else{setStatus(`移行完了！ 個体${done.pets}・記録${done.records}・予定${done.events}・写真${done.photos}をコピーしました。共有リンクを発行できます。`);}
-  updateCloudSyncStatus('クラウドノートへの移行が完了しました。');
- }catch(error){setStatus(`移行できませんでした：${error.message}。端末内のデータは残しています。`);}
-}
-
 async function loadParticipants(){
  const url=GUEST_API_URL;
  const token=activeSharedToken();
