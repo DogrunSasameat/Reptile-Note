@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#111827">
 <meta name="description" content="爬虫類の飼育記録・健康管理アプリ">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <title>REPTILE NOTE</title>
 <style>
 :root{--bg:#0b1020;--panel:#151d30;--panel2:#1d2940;--line:#2b3954;--text:#f1f5f9;--muted:#9aa9bf;--lime:#b8f36b;--cyan:#7de3df;--orange:#ffbd69;--red:#ff7d86}
@@ -174,7 +176,7 @@ h2{font-size:15px;font-weight:650;letter-spacing:.01em}
 <dialog id="petDialog"><button class="close" onclick="closeDialog('petDialog')">×</button><h2>個体データ</h2><form id="petForm"><input type="hidden" id="petId"><label class="field">名前 *</label><input id="petName" required placeholder="例：ククルカン"><label class="field">種類</label><input id="petSpecies" placeholder="例：ボールパイソン"><div class="grid pet-date-grid"><div><label class="field">性別</label><select id="petSex"><option>不明</option><option>♀</option><option>♂</option></select></div><div><label class="field">お迎え日</label><input id="petArrival" type="date" min="0001-01-01" max="9999-12-31"></div></div><label class="field">誕生日（分かる場合）</label><input id="petBirthday" type="date" min="0001-01-01" max="9999-12-31"><label class="field">モルフ・品種</label><input id="petMorph" placeholder="任意"><label class="field">写真</label><input id="petPhoto" type="file" accept="image/*"><img id="petPhotoPreview" class="photo-preview" hidden><label class="field">プロフィールメモ</label><textarea id="petNotes"></textarea><button class="btn primary full" type="submit">保存する</button></form></dialog>
 <dialog id="environmentDialog"><button class="close" onclick="closeDialog('environmentDialog')">×</button><h2>飼育環境を編集</h2><form id="environmentForm"><input type="hidden" id="envPetId"><div class="small" id="envPetName"></div><h3>ケージ・飼育容器</h3><label class="field">種類・製品名</label><input id="envCage" placeholder="例：レプタイルボックス"><label class="field">サイズ・寸法（cm）</label><div class="grid dimension-grid"><div><label class="field">幅</label><input id="envCageWidth" type="number" step="0.1" placeholder="幅"></div><div><label class="field">奥行</label><input id="envCageDepth" type="number" step="0.1" placeholder="奥行"></div><div><label class="field">高さ</label><input id="envCageHeight" type="number" step="0.1" placeholder="高さ"></div></div><label class="field">素材・特徴</label><input id="envCageMaterial" placeholder="例：プラスチック製、通気口あり"><h3>保温・温湿度管理</h3><label class="field">保温器具</label><input id="envHeater" placeholder="例：パネルヒーター"><label class="field">サーモスタット</label><input id="envThermostat" placeholder="製品名・設定温度など"><label class="field">目標温度・湿度</label><div class="grid"><div><label class="field">温度</label><input id="envTargetTemp" placeholder="例：ホット 31℃"></div><div><label class="field">湿度</label><input id="envTargetHumidity" placeholder="例：60〜70％"></div></div><h3>レイアウト・用品</h3><label class="field">床材</label><input id="envSubstrate" placeholder="使用している床材"><label class="field">シェルター</label><input id="envHide" placeholder="種類・素材・設置場所"><label class="field">水入れ</label><input id="envWater" placeholder="大きさ・種類など"><label class="field">照明・UVB</label><input id="envLighting" placeholder="使用している場合"><label class="field">その他の設備・レイアウト</label><textarea id="envOther" placeholder="登り木、温湿度計、目隠しなど"></textarea><label class="field">環境メモ</label><textarea id="envNotes" placeholder="配置や変更履歴、気になることなど"></textarea><button class="btn primary full" type="submit">環境を保存</button></form></dialog>
 <dialog id="recordDialog"><button class="close" onclick="closeDialog('recordDialog')">×</button><h2 id="recordDialogTitle">飼育記録を追加</h2><form id="recordForm"><input type="hidden" id="recordId"><label class="field">個体 *</label><select id="rPet" required></select><label class="field">記録タイプ</label><select id="rType" onchange="recordFields()"><option>測定</option><option value="給餌">ごはん</option><option>脱皮</option><option>排泄</option><option>温度</option><option>湿度</option><option>お掃除</option><option>健康・通院</option><option>その他</option></select><label class="field">日時</label><input id="rDate" type="datetime-local" required min="0001-01-01T00:00" max="9999-12-31T23:59"><div id="dynamicFields"></div><label class="field">メモ</label><textarea id="rNotes" placeholder="気づいたこと、様子など"></textarea><label class="field">写真（任意）</label><input id="rPhoto" type="file" accept="image/*"><button class="btn primary full" type="submit">記録を保存</button></form></dialog>
-<dialog id="galleryDialog"><button class="close" onclick="closeDialog('galleryDialog')">×</button><h2>写真を追加</h2><form id="galleryForm"><label class="field">個体</label><select id="gPet"></select><label class="field">写真 *</label><input id="gPhoto" type="file" accept="image/*" required><img id="gPhotoPreview" class="photo-preview" hidden><label class="field">撮影日・記録日</label><input id="gDate" type="date" required min="0001-01-01" max="9999-12-31"><label class="field">タイトル</label><input id="gTitle" placeholder="例：お迎えした日、脱皮後"><label class="field">メモ</label><textarea id="gNotes" placeholder="写真についてのメモ"></textarea><label class="field">公開範囲</label><select id="gVisibility"><option value="private">自分だけ（非公開）</option><option value="shared">共有メンバーにも公開</option></select><button class="btn primary full" type="submit">写真を保存</button></form></dialog>
+<dialog id="galleryDialog"><button class="close" onclick="closeDialog('galleryDialog')">×</button><h2 id="galleryDialogTitle">写真を追加</h2><form id="galleryForm"><input type="hidden" id="gEditId"><label class="field">個体</label><select id="gPet"></select><label class="field">写真 *</label><input id="gPhoto" type="file" accept="image/*"><img id="gPhotoPreview" class="photo-preview" hidden><div id="gPhotoKeepHint" class="small" hidden>写真を選び直さなければ、現在の写真をそのまま使います。</div><label class="field">撮影日・記録日</label><input id="gDate" type="date" required min="0001-01-01" max="9999-12-31"><label class="field">タイトル</label><input id="gTitle" placeholder="例：お迎えした日、脱皮後"><label class="field">メモ</label><textarea id="gNotes" placeholder="写真についてのメモ"></textarea><label class="field">公開範囲</label><select id="gVisibility"><option value="private">自分だけ（非公開）</option><option value="shared">共有メンバーにも公開</option></select><button class="btn primary full" type="submit">写真を保存</button></form></dialog>
 <dialog id="eventDialog"><button class="close" onclick="closeDialog('eventDialog')">×</button><h2 id="eventDialogTitle">予定を追加</h2><form id="eventForm"><input type="hidden" id="eId"><label class="field">個体</label><select id="ePet"></select><label class="field">予定名 *</label><input id="eTitle" required placeholder="例：給餌予定、体重測定"><label class="field">日時 *</label><input id="eDate" type="datetime-local" required min="0001-01-01T00:00" max="9999-12-31T23:59"><label class="field">メモ</label><textarea id="eNotes"></textarea><label class="repeat-check" for="eRepeat"><input id="eRepeat" type="checkbox" onchange="toggleRepeatOptions()"><span>繰り返しの予定</span></label><div id="repeatOptions" hidden><label class="field">繰り返し方法</label><select id="eRepeatType" onchange="renderRepeatFields()"><option value="day">毎月○日</option><option value="weekday">毎月○回目の○曜日</option><option value="last">毎月末日</option></select><div id="repeatFields"></div></div><button class="btn primary full">予定を保存</button></form></dialog>
 <dialog id="settingsDialog"><button class="close" onclick="closeDialog('settingsDialog')">×</button><h2>設定</h2><p class="small">管理したい項目を選択してください。</p>
 <button class="settings-row" onclick="openSettingDetail('owner')"><span>👤 <b>飼い主情報</b><small>名前・連絡先・住所</small></span><strong>›</strong></button>
@@ -558,8 +560,17 @@ function recordFields(){const t=$('rType').value;let h='';if(t==='温度'||t==='
 $('rPhoto').onchange=async e=>selectedRecordPhoto=await readPhoto(e.target.files[0]);
 $('recordForm').onsubmit=e=>{e.preventDefault();const t=$('rType').value;const fields={};document.querySelectorAll('#dynamicFields input,#dynamicFields select').forEach(x=>fields[x.id]=x.value);if(t==='体重'&&!fields.fWeight){alert('体重を入力してください');return}if(t==='長さ'&&!fields.fLength){alert('長さを入力してください');return}if(t==='測定'&&!fields.fWeight&&!fields.fLength){alert('体重か長さを入力してください');return}const id=$('recordId').value;let record=id?db.records.find(r=>r.id===id):null;if(record){record.petId=$('rPet').value;record.type=t;record.date=$('rDate').value;record.fields=fields;record.notes=$('rNotes').value;record.photo=selectedRecordPhoto||''}else{record={id:crypto.randomUUID(),petId:$('rPet').value,type:t,date:$('rDate').value,fields,notes:$('rNotes').value,photo:selectedRecordPhoto||''};db.records.unshift(record)}selectedRecordPhoto=null;closeDialog('recordDialog');save();if(activeSharedToken()&&!isSharedViewer())syncRecordToCloud(record)};
 function recordSummary(r){const f=r.fields||{};if(r.type==='温度'||r.type==='温湿度')return ([((f.fHotTemp??f.fTemp)!==''&&(f.fHotTemp??f.fTemp)!=null?`HOT ${f.fHotTemp??f.fTemp}`:''),f.fCoolTemp!==''&&f.fCoolTemp!=null?`COOL ${f.fCoolTemp}`:''].filter(Boolean).join(' / ')+(f.fHotTemp||f.fTemp||f.fCoolTemp?' ℃':''));if(r.type==='湿度')return f.fHum?f.fHum+'%':'';if(r.type==='給餌')return [f.fFood,f.fResult].filter(Boolean).join(' / ');if(r.type==='体重')return f.fWeight?f.fWeight+' g':'';if(r.type==='長さ')return f.fLength?f.fLength+' cm':'';if(r.type==='測定')return [f.fWeight?f.fWeight+' g':'',f.fLength?f.fLength+' cm':''].filter(Boolean).join(' / ');if(r.type==='脱皮')return f.fShed||'';if(r.type==='排泄')return f.fWaste||'';if(r.type==='お掃除')return f.fCleaning||'掃除';if(r.type==='その他')return [f.fOtherTitle,f.fOther].filter(Boolean).join('：');if(r.type==='健康・通院')return f.fHealth||'';return ''}
-function renderRecords(){const filter=$('recordPetFilter');const selectedPet=filter.value;petOptions(filter,true);if(selectedPet&&db.pets.some(p=>p.id===selectedPet))filter.value=selectedPet;const pid=filter.value,typ=$('recordTypeFilter').value;const arr=db.records.filter(r=>(!pid||r.petId===pid)&&(!typ||r.type===typ||(typ==='その他'&&r.type==='メモ')||(r.type==='温湿度'&&(typ==='温度'||typ==='湿度'))));$('recordList').innerHTML=arr.length?arr.map(r=>`<div class="card"><div class="row"><b>${esc(r.type==='メモ'?'その他':r.type)} <span class="tag">${esc(petName(r.petId))}</span></b><div class="row">${isSharedViewer()?'':`<button class="btn" onclick="openRecord('${r.type}','${r.petId}','','${r.id}')">編集</button>`}${activeSharedToken()?'':`<button class="btn ghost danger" onclick="deleteRecord('${r.id}')">削除</button>`}</div></div><div class="small">${esc(r.date.replace('T',' '))}</div><div style="margin-top:7px">${esc(recordSummary(r))}</div>${r.notes?`<p>${esc(r.notes)}</p>`:''}${r.photo?`<img src="${r.photo}" class="photo-preview">`:''}</div>`).join(''):'<div class="empty">記録はまだありません</div>'}
-function deleteRecord(id){if(confirm('この記録を削除しますか？')){db.records=db.records.filter(r=>r.id!==id);save()}}
+function renderRecords(){const filter=$('recordPetFilter');const selectedPet=filter.value;petOptions(filter,true);if(selectedPet&&db.pets.some(p=>p.id===selectedPet))filter.value=selectedPet;const pid=filter.value,typ=$('recordTypeFilter').value;const arr=db.records.filter(r=>(!pid||r.petId===pid)&&(!typ||r.type===typ||(typ==='その他'&&r.type==='メモ')||(r.type==='温湿度'&&(typ==='温度'||typ==='湿度'))));$('recordList').innerHTML=arr.length?arr.map(r=>`<div class="card"><div class="row"><b>${esc(r.type==='メモ'?'その他':r.type)} <span class="tag">${esc(petName(r.petId))}</span></b><div class="row">${isSharedViewer()?'':`<button class="btn" onclick="openRecord('${r.type}','${r.petId}','','${r.id}')">編集</button>`}${!isSharedViewer()?`<button class="btn ghost danger" onclick="deleteRecord('${r.id}')">削除</button>`:''}</div></div><div class="small">${esc(r.date.replace('T',' '))}</div><div style="margin-top:7px">${esc(recordSummary(r))}</div>${r.notes?`<p>${esc(r.notes)}</p>`:''}${r.photo?`<img src="${r.photo}" class="photo-preview">`:''}</div>`).join(''):'<div class="empty">記録はまだありません</div>'}
+async function deleteRecord(id){
+ if(!confirm('この記録を削除しますか？'))return;
+ try{
+  if(activeSharedToken()){
+   if(isSharedViewer())throw new Error('削除権限がありません。');
+   await guestApi({action:'delete_record',token:activeSharedToken(),recordId:id});
+  }
+  db.records=db.records.filter(r=>r.id!==id);save();
+ }catch(error){alert(`記録を削除できませんでした。\n${error.message}`);}
+}
 function toggleRepeatOptions(){$('repeatOptions').hidden=!$('eRepeat').checked;if(!$('repeatOptions').hidden)renderRepeatFields()}
 function renderRepeatFields(){const t=$('eRepeatType').value;if(t==='weekday')$('repeatFields').innerHTML='<div class="grid"><div><label class="field">何週目</label><select id="eRepeatNth"><option value="1">第1</option><option value="2">第2</option><option value="3">第3</option><option value="4">第4</option><option value="5">第5</option><option value="-1">最終</option></select></div><div><label class="field">曜日</label><select id="eRepeatWeekday"><option value="0">日曜日</option><option value="1">月曜日</option><option value="2">火曜日</option><option value="3">水曜日</option><option value="4">木曜日</option><option value="5">金曜日</option><option value="6">土曜日</option></select></div></div>';else if(t==='day')$('repeatFields').innerHTML='<label class="field">毎月何日</label><select id="eRepeatDay">'+Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}日</option>`).join('')+'</select>';else $('repeatFields').innerHTML='<p class="small">毎月の最終日（28〜31日）に表示します。</p>'}
 function openEventForm(date='',eventId=''){petOptions($('ePet'));$('eventForm').reset();$('eId').value='';$('eventDialogTitle').textContent=eventId?'予定を編集':'予定を追加';const base=date?new Date(date+'T09:00:00'):new Date();$('eDate').value=new Date(base.getTime()-base.getTimezoneOffset()*60000).toISOString().slice(0,16);$('repeatOptions').hidden=true;$('repeatFields').innerHTML='';if(eventId){const ev=db.events.find(x=>x.id===eventId);if(ev){$('eId').value=ev.id;$('ePet').value=ev.petId||'';$('eTitle').value=ev.title;$('eDate').value=ev.date;$('eNotes').value=ev.notes||'';$('eRepeat').checked=!!ev.repeat;if(ev.repeat){$('eRepeatType').value=ev.repeat.type;$('repeatOptions').hidden=false;renderRepeatFields();if(ev.repeat.type==='day')$('eRepeatDay').value=ev.repeat.day;if(ev.repeat.type==='weekday'){$('eRepeatNth').value=ev.repeat.nth;$('eRepeatWeekday').value=ev.repeat.weekday}}}}else{$('eRepeat').checked=false;$('eRepeatType').value='day'}$('eventDialog').showModal()}
@@ -623,13 +634,40 @@ function showDayDetails(ds){
  document.body.appendChild(dlg);dlg.showModal();dlg.addEventListener('close',()=>dlg.remove(),{once:true});
 }
 function editRecordFromDay(id,dlg){dlg.close();setTimeout(()=>openRecord('温湿度','','',id),0)}
-function deleteRecordFromDay(id,dlg){if(confirm('この記録を削除しますか？')){db.records=db.records.filter(r=>r.id!==id);dlg.close();save()}}
+async function deleteRecordFromDay(id,dlg){
+ if(!confirm('この記録を削除しますか？'))return;
+ try{
+  if(activeSharedToken()){
+   if(isSharedViewer())throw new Error('削除権限がありません。');
+   await guestApi({action:'delete_record',token:activeSharedToken(),recordId:id});
+  }
+  db.records=db.records.filter(r=>r.id!==id);dlg.close();save();
+ }catch(error){alert(`記録を削除できませんでした。\n${error.message}`);}
+}
 function editEventFromDay(id,dlg){dlg.close();setTimeout(()=>openEventForm('',id),0)}
-function deleteEventFromDay(id,dlg){if(confirm('この予定（繰り返し設定を含む）を削除しますか？')){db.events=db.events.filter(e=>e.id!==id);dlg.close();save()}}
+async function deleteEventFromDay(id,dlg){
+ if(!confirm('この予定（繰り返し設定を含む）を削除しますか？'))return;
+ try{
+  if(activeSharedToken()){
+   if(isSharedViewer())throw new Error('削除権限がありません。');
+   await guestApi({action:'delete_event',token:activeSharedToken(),eventId:id});
+  }
+  db.events=db.events.filter(e=>e.id!==id);dlg.close();save();
+ }catch(error){alert(`予定を削除できませんでした。\n${error.message}`);}
+}
 function addRecordForDate(ds,dlg){dlg.close();setTimeout(()=>openRecord('温湿度','',ds),0)}
 function addEventForDate(ds,dlg){dlg.close();setTimeout(()=>openEventForm(ds),0)}
 function changeMonth(n){monthCursor.setMonth(monthCursor.getMonth()+n);renderCalendar()}
-function deleteEvent(id){if(confirm('予定を削除しますか？')){db.events=db.events.filter(e=>e.id!==id);save()}}
+async function deleteEvent(id){
+ if(!confirm('予定を削除しますか？'))return;
+ try{
+  if(activeSharedToken()){
+   if(isSharedViewer())throw new Error('削除権限がありません。');
+   await guestApi({action:'delete_event',token:activeSharedToken(),eventId:id});
+  }
+  db.events=db.events.filter(e=>e.id!==id);save();
+ }catch(error){alert(`予定を削除できませんでした。\n${error.message}`);}
+}
 function ageText(birthday){
  if(!birthday)return '未登録';
  const b=new Date(birthday+'T12:00:00'),n=new Date();
@@ -749,7 +787,11 @@ function checkAnniversaryNotifications(){
 }
 let selectedGalleryPhoto=null;
 function openGalleryForm(){
- $('galleryForm').reset();petOptions($('gPet'),true);$('gDate').value=localDateKey(new Date());selectedGalleryPhoto=null;$('gPhotoPreview').hidden=true;$('galleryDialog').showModal();
+ $('galleryForm').reset();$('galleryDialogTitle').textContent='写真を追加';$('gEditId').value='';$('gPhoto').required=true;$('gPhotoKeepHint').hidden=true;petOptions($('gPet'),true);$('gDate').value=localDateKey(new Date());selectedGalleryPhoto=null;$('gPhotoPreview').hidden=true;$('galleryDialog').showModal();
+}
+function openGalleryEditForm(id){
+ const p=(db.galleryPhotos||[]).find(x=>x.id===id);if(!p)return;
+ $('galleryForm').reset();$('galleryDialogTitle').textContent='写真を編集';$('gEditId').value=id;$('gPhoto').required=false;$('gPhotoKeepHint').hidden=false;petOptions($('gPet'),true);$('gPet').value=p.petId||'';$('gDate').value=p.date||'';$('gTitle').value=p.title||'';$('gNotes').value=p.notes||'';$('gVisibility').value=p.visibility||'private';selectedGalleryPhoto=null;$('gPhotoPreview').src=p.photo||'';$('gPhotoPreview').hidden=!p.photo;$('galleryDialog').showModal();
 }
 async function compressPhoto(file){
  if(!file)return null;
@@ -759,25 +801,14 @@ async function compressPhoto(file){
 }
 $('gPhoto').onchange=async e=>{try{selectedGalleryPhoto=await compressPhoto(e.target.files[0]);$('gPhotoPreview').src=selectedGalleryPhoto||'';$('gPhotoPreview').hidden=!selectedGalleryPhoto;}catch(err){alert('この写真を読み込めませんでした');selectedGalleryPhoto=null;}};
 $('galleryForm').onsubmit=async e=>{
- e.preventDefault();
- if(!selectedGalleryPhoto){alert('写真を選択してください');return;}
- const token=activeSharedToken();
- const photoData={petId:$('gPet').value||'',takenAt:$('gDate').value?new Date($('gDate').value+'T12:00:00').toISOString():null,title:$('gTitle').value.trim(),memo:$('gNotes').value.trim(),visibility:$('gVisibility').value,dataUrl:selectedGalleryPhoto};
+ e.preventDefault();const editId=$('gEditId').value;const existing=editId?(db.galleryPhotos||[]).find(x=>x.id===editId):null;
+ if(!editId&&!selectedGalleryPhoto){alert('写真を選択してください');return;}if(editId&&!existing){alert('編集する写真が見つかりません');return;}
+ const token=activeSharedToken();const photoData={petId:$('gPet').value||'',takenAt:$('gDate').value?new Date($('gDate').value+'T12:00:00').toISOString():null,title:$('gTitle').value.trim(),memo:$('gNotes').value.trim(),visibility:$('gVisibility').value};
  const submit=$('galleryForm').querySelector('button[type="submit"]');submit.disabled=true;submit.textContent='保存中…';
  try{
-  let item;
-  if(token){
-   if(isSharedViewer())throw new Error('閲覧のみの共有ノートでは写真を追加できません。');
-   const result=await guestApi({action:'upload_photo',token,photo:photoData});
-   const row=result.photo||{};
-   item={id:row.id,petId:row.pet_id||photoData.petId,date:photoData.takenAt?photoData.takenAt.slice(0,10):$('gDate').value,title:photoData.title,notes:photoData.memo,photo:selectedGalleryPhoto,visibility:row.visibility||photoData.visibility,storagePath:row.storage_path,cloud:true};
-  }else{
-   item={id:crypto.randomUUID(),...{petId:photoData.petId,date:$('gDate').value,title:photoData.title,notes:photoData.memo,photo:selectedGalleryPhoto,visibility:photoData.visibility,cloud:false}};
-  }
-  db.galleryPhotos=db.galleryPhotos||[];db.galleryPhotos.unshift(item);selectedGalleryPhoto=null;closeDialog('galleryDialog');save();
-  if(token)await loadSharedPhotosFromCloud();
- }catch(error){alert(`写真を保存できませんでした。\n${error.message}`);}
- finally{submit.disabled=false;submit.textContent='写真を保存';}
+  if(editId){if(existing.cloud){if(!token)throw new Error('セッションがありません');await guestApi({action:'update_photo_metadata',token,photoId:editId,photo:photoData});}Object.assign(existing,{petId:photoData.petId,date:$('gDate').value,title:photoData.title,notes:photoData.memo,visibility:photoData.visibility});if(selectedGalleryPhoto&&!existing.cloud)existing.photo=selectedGalleryPhoto;save();closeDialog('galleryDialog');if(token)await loadSharedPhotosFromCloud();}
+  else{if(token){if(isSharedViewer())throw new Error('閲覧のみの共有ノートでは写真を追加できません。');const result=await guestApi({action:'upload_photo',token,photo:{...photoData,dataUrl:selectedGalleryPhoto}});const row=result.photo||{};db.galleryPhotos.unshift({id:row.id,petId:row.pet_id||photoData.petId,date:photoData.takenAt?photoData.takenAt.slice(0,10):$('gDate').value,title:photoData.title,notes:photoData.memo,photo:selectedGalleryPhoto,visibility:row.visibility||photoData.visibility,storagePath:row.storage_path,cloud:true});}else db.galleryPhotos.unshift({id:crypto.randomUUID(),petId:photoData.petId,date:$('gDate').value,title:photoData.title,notes:photoData.memo,photo:selectedGalleryPhoto,visibility:photoData.visibility,cloud:false});selectedGalleryPhoto=null;save();closeDialog('galleryDialog');if(token)await loadSharedPhotosFromCloud();}
+ }catch(error){alert(`写真を保存できませんでした。\n${error.message}`);}finally{submit.disabled=false;submit.textContent='写真を保存';}
 };
 async function loadSharedPhotosFromCloud(){
  const token=activeSharedToken();if(!token)return false;
@@ -807,7 +838,7 @@ function renderAlbum(){
  const own=(db.galleryPhotos||[]).map(x=>({...x,source:'gallery'}));
  const a=[...records,...own].sort((x,y)=>(y.date||'').localeCompare(x.date||''));
  const canEdit=!isSharedViewer();
- $('albumGrid').innerHTML=a.length?a.map(x=>`<div class="card" style="padding:8px"><img src="${x.photo}" alt="${esc(x.title||'飼育写真')}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px"><div style="font-size:12px;margin-top:7px">${esc(x.title||'写真')} ${x.petId?`· ${esc(petName(x.petId))}`:'· 共通'}</div><div class="small">${esc(x.date||'')}</div>${x.notes?`<div class="small" style="margin-top:5px">${esc(x.notes)}</div>`:''}${x.source==='gallery'?`${x.visibility?`<div class="small">公開範囲：${x.visibility==='shared'?'共有':'自分だけ'}</div>`:''}${canEdit?`${!guestSessionActive()||!isSharedViewer()?`<select aria-label="公開範囲" style="width:100%;margin-top:7px" onchange="changePhotoVisibility('${x.id}',this.value)"><option value="private" ${x.visibility!=='shared'?'selected':''}>自分だけ</option><option value="shared" ${x.visibility==='shared'?'selected':''}>共有</option></select>`:''}<button class="btn ghost danger full" style="margin-top:8px" onclick="deleteGalleryPhoto('${x.id}')">削除</button>`:''}`:`<div class="small">記録から追加</div>`}</div>`).join(''):'<div class="empty" style="grid-column:1/-1">写真はまだありません。「＋ 写真を追加」から登録できます。</div>';
+ $('albumGrid').innerHTML=a.length?a.map(x=>`<div class="card" style="padding:8px"><img src="${x.photo}" alt="${esc(x.title||'飼育写真')}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px"><div style="font-size:12px;margin-top:7px">${esc(x.title||'写真')} ${x.petId?`· ${esc(petName(x.petId))}`:'· 共通'}</div><div class="small">${esc(x.date||'')}</div>${x.notes?`<div class="small" style="margin-top:5px">${esc(x.notes)}</div>`:''}${x.source==='gallery'?`${x.visibility?`<div class="small">公開範囲：${x.visibility==='shared'?'共有':'自分だけ'}</div>`:''}${canEdit?`${!guestSessionActive()||!isSharedViewer()?`<select aria-label="公開範囲" style="width:100%;margin-top:7px" onchange="changePhotoVisibility('${x.id}',this.value)"><option value="private" ${x.visibility!=='shared'?'selected':''}>自分だけ</option><option value="shared" ${x.visibility==='shared'?'selected':''}>共有</option></select>`:''}<button class="btn full" style="margin-top:8px" onclick="openGalleryEditForm('${x.id}')">編集</button><button class="btn ghost danger full" style="margin-top:8px" onclick="deleteGalleryPhoto('${x.id}')">削除</button>`:''}`:`<div class="small">記録から追加</div>`}</div>`).join(''):'<div class="empty" style="grid-column:1/-1">写真はまだありません。「＋ 写真を追加」から登録できます。</div>';
 }
 function renderAll(){
  const jobs=[['home',renderHome],['pets',renderPets],['environment',renderEnvironment],['records',renderRecords],['calendar',renderCalendar],['upcoming',renderUpcoming],['album',renderAlbum]];
