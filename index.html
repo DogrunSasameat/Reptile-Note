@@ -86,6 +86,43 @@ select:focus{outline:none;border-color:var(--lime);box-shadow:0 0 0 3px #b8f36b2
 select:disabled{opacity:.5;cursor:not-allowed}
 select option{background:#101a2d;color:#edf3ff;padding:10px}
 select optgroup{background:#17243a;color:#b8f36b;font-weight:700}
+
+/* Custom modern date field + calendar popup */
+.date-input-wrap{position:relative;display:flex;align-items:center;width:100%;min-width:0}
+.date-input-wrap .native-date-value{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important;inset:auto!important;padding:0!important;margin:0!important;border:0!important}
+.date-display{width:100%;min-width:0;padding:12px 46px 12px 13px!important;color:var(--text)!important;background:#0d1729!important;border:1px solid #35445e!important;border-radius:12px!important;font:inherit;letter-spacing:.02em;cursor:pointer}
+.date-display::placeholder{color:#7f8da4}
+.date-display:focus{outline:none;border-color:var(--lime)!important;box-shadow:0 0 0 3px #b8f36b22}
+.date-open-btn{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:32px;height:32px;padding:0;border:1px solid #35445e;border-radius:9px;background:#1a2940;color:var(--lime);font-size:17px;display:grid;place-items:center}
+.date-open-btn:active{background:#2a3d57}
+.date-picker-overlay{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:18px;background:#020817b8;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.date-picker-overlay.open{display:flex}
+.date-picker-card{width:min(100%,350px);padding:17px;border:1px solid #3b4d69;border-radius:20px;background:linear-gradient(155deg,#1a2940,#0e1729 70%);box-shadow:0 22px 70px #0009;color:#eef4ff}
+.date-picker-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:17px}
+.date-picker-top small{display:block;color:#9bacbf;font-size:9px;letter-spacing:.18em;margin-bottom:4px}
+.date-picker-top strong{font-size:18px}
+.dp-close{width:32px;height:32px;border:1px solid #3b4d69;border-radius:10px;background:#17243a;color:#dce6f4;font-size:21px}
+.date-picker-month{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.date-picker-month strong{font-size:16px}
+.date-picker-month button{width:34px;height:34px;border:1px solid #35445e;border-radius:10px;background:#17243a;color:var(--lime);font-size:23px;line-height:1}
+.date-picker-week,.date-picker-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;text-align:center}
+.date-picker-week{margin-bottom:7px;color:#9fb0c5;font-size:12px}
+.date-picker-week span:first-child{color:#ff8d9a}
+.date-picker-week span:last-child{color:#91aaff}
+.dp-day{aspect-ratio:1;min-width:0;border:1px solid transparent;border-radius:10px;background:transparent;color:#edf3ff;font-size:13px}
+.dp-day.outside{color:#65748b}
+.dp-day.today{border-color:#71849e}
+.dp-day.selected{background:var(--lime);border-color:var(--lime);color:#17210e;font-weight:800;box-shadow:0 3px 12px #b8f36b40}
+.dp-day:active{background:#344967}
+.dp-time-row{margin-top:14px}
+.dp-time-row[hidden]{display:none}
+.dp-time-row label{display:flex;align-items:center;justify-content:space-between;color:#aebdd0;font-size:12px}
+.dp-time-row input{width:130px!important;padding:8px 10px!important;border:1px solid #35445e!important;border-radius:10px!important;background:#0d1729!important;color:#eef4ff!important}
+.date-picker-actions{display:flex;align-items:center;gap:8px;margin-top:15px;padding-top:13px;border-top:1px solid #34445c}
+.date-picker-actions span{flex:1}
+.date-picker-actions button{padding:8px 12px;border:1px solid #35445e;border-radius:10px;background:#17243a;color:#cbd7e6;font-size:12px}
+.date-picker-actions #dpApply{background:var(--lime);border-color:var(--lime);color:#17210e;font-weight:800}
+@media(max-width:380px){.date-picker-card{padding:13px}.date-picker-week,.date-picker-days{gap:3px}.dp-day{border-radius:8px}}
 </style>
 </head>
 <body>
@@ -124,7 +161,23 @@ const KEY='reptileQuestData_v1';
 let db={pets:[],records:[],events:[],galleryPhotos:[]};let monthCursor=new Date();let selectedPhoto=null,selectedRecordPhoto=null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function load(){try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&Array.isArray(x.pets))db={...x,galleryPhotos:Array.isArray(x.galleryPhotos)?x.galleryPhotos:[]};}catch(e){} if(!db.pets.length&&!localStorage.getItem(KEY)){db.pets=[{id:crypto.randomUUID(),name:'ククルカン',species:'ボールパイソン',sex:'♀',arrival:'2026-11-14',birthday:'',morph:'',notes:'おくびょうな性格。ものおとに敏感。',photo:''}];save();} }
+function load(){
+ try{
+  const raw=localStorage.getItem(KEY),x=raw?JSON.parse(raw):null;
+  if(x&&typeof x==='object'&&!Array.isArray(x)){
+   db={...db,...x,
+    pets:Array.isArray(x.pets)?x.pets.filter(v=>v&&typeof v==='object'):[],
+    records:Array.isArray(x.records)?x.records.filter(v=>v&&typeof v==='object'):[],
+    events:Array.isArray(x.events)?x.events.filter(v=>v&&typeof v==='object'):[],
+    galleryPhotos:Array.isArray(x.galleryPhotos)?x.galleryPhotos.filter(v=>v&&typeof v==='object'):[]
+   };
+  }
+ }catch(e){console.error('REPTILE NOTE data load error',e)}
+ if(!db.pets.length&&!localStorage.getItem(KEY)){
+  db.pets=[{id:crypto.randomUUID(),name:'ククルカン',species:'ボールパイソン',sex:'♀',arrival:'2026-11-14',birthday:'',morph:'',notes:'おくびょうな性格。ものおとに敏感。',photo:''}];
+  save();
+ }
+}
 function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===id));renderAll()}
 function closeDialog(id){$(id).close()}
@@ -154,6 +207,13 @@ $('environmentForm').onsubmit=e=>{e.preventDefault();const p=db.pets.find(x=>x.i
 function renderEnvironment(){const el=$('environmentList');if(!db.pets.length){el.innerHTML='<div class="empty">先に個体を登録してください。</div>';return}el.innerHTML=db.pets.map(p=>{const e=p.environment||{};const rows=[['ケージ',e.cage,(e.cageWidth||e.cageDepth||e.cageHeight)?`${e.cageWidth||'—'}×${e.cageDepth||'—'}×${e.cageHeight||'—'} cm`:e.cageSize],['素材・特徴',e.cageMaterial],['保温器具',e.heater],['サーモスタット',e.thermostat],['目標温度',e.targetTemp],['目標湿度',e.targetHumidity],['床材',e.substrate],['シェルター',e.hide],['水入れ',e.water],['照明・UVB',e.lighting],['その他の設備',e.other],['環境メモ',e.notes]];const filled=rows.filter(x=>x[1]||x[2]);return `<div class="card"><div class="row"><div><h2 style="margin:0">🏡 ${esc(p.name)}</h2><div class="small">${esc(p.species||'')}</div></div><button class="btn" onclick="openEnvironmentForm('${p.id}')">編集</button></div>${filled.length?filled.map(x=>`<div class="listitem"><div class="small">${x[0]}</div><div>${esc([x[1],x[2]].filter(Boolean).join(' · '))}</div></div>`).join(''):'<div class="empty">まだ環境情報が登録されていません。</div>'}</div>`}).join('')}
 function openRecord(type='温湿度',petId='',date='',recordId=''){if(!db.pets.length){alert('先に個体を登録してください');return}const existing=recordId?db.records.find(r=>r.id===recordId):null;$('recordForm').reset();petOptions($('rPet'));$('recordId').value=existing?.id||'';if(existing){$('rPet').value=existing.petId;$('rType').value=existing.type==='メモ'?'その他':existing.type==='温湿度'?'温度':existing.type;$('rDate').value=existing.date;$('rNotes').value=existing.notes||'';selectedRecordPhoto=existing.photo||''}else{if(petId&&db.pets.some(p=>p.id===petId))$('rPet').value=petId;const base=date?new Date(date+'T09:00:00'):new Date();$('rDate').value=new Date(base.getTime()-base.getTimezoneOffset()*60000).toISOString().slice(0,16);$('rType').value=type;selectedRecordPhoto=null}recordFields();if(existing)Object.entries(existing.fields||{}).forEach(([id,value])=>{const target=id==='fTemp'?'fHotTemp':id;const field=$(target);if(field)field.value=value});if(existing?.type==='メモ'&&$('fOther')&&!$('fOther').value)$('fOther').value=existing.notes||'';if(existing?.type==='温湿度'&&$('fHum'))$('fHum').value=existing.fields?.fHum||'';$('recordDialogTitle').textContent=existing?'飼育記録を編集':'飼育記録を追加';$('recordDialog').showModal()}
 function quickRecord(type){openRecord(type)}
+function openHomeTile(type,petId){
+ const aliases=type==='温度'?['温度','温湿度']:type==='湿度'?['湿度','温湿度']:[type];
+ const latest=db.records.filter(r=>r.petId===petId&&aliases.includes(r.type))
+  .sort((a,b)=>new Date(b.date||0)-new Date(a.date||0))[0];
+ if(latest)openRecord(latest.type,petId,'',latest.id);
+ else openRecord(type,petId);
+}
 function recordFields(){const t=$('rType').value;let h='';if(t==='温度'||t==='温湿度')h='<div class="grid"><div><label class="field">HOT 温度（℃）</label><input id="fHotTemp" type="number" step="0.1" placeholder="例：30"></div><div><label class="field">COOL 温度（℃）</label><input id="fCoolTemp" type="number" step="0.1" placeholder="例：25"></div></div>';if(t==='湿度')h='<label class="field">湿度（%）</label><input id="fHum" type="number" step="1" placeholder="例：60">';if(t==='給餌')h='<label class="field">餌の種類・サイズ</label><input id="fFood" placeholder="例：ファジーマウス"><label class="field">結果</label><select id="fResult"><option>食べた</option><option>食べなかった</option><option>一部食べた</option><option>吐いた</option></select>';if(t==='測定')h='<div class="grid"><div><label class="field">体重（g）</label><input id="fWeight" type="number" step="0.1" placeholder="例：520"></div><div><label class="field">長さ（cm）</label><input id="fLength" type="number" step="0.1" placeholder="例：85.0"></div></div><p class="small">体重・長さのどちらか一方、または両方を入力できます。</p>';if(t==='脱皮')h='<label class="field">脱皮の状態</label><select id="fShed"><option>きれいに脱皮</option><option>一部残りあり</option><option>脱皮不全・要観察</option></select>';if(t==='排泄')h='<label class="field">排泄の種類</label><select id="fWaste"><option>うんち</option><option>おしっこ（尿酸）</option><option>うんち・おしっこ</option></select>';if(t==='お掃除')h='<label class="field">掃除した内容</label><input id="fCleaning" placeholder="例：床材交換、水入れ洗浄">';if(t==='その他')h='<label class="field">記録タイトル</label><input id="fOtherTitle" placeholder="例：温浴、行動の変化"><label class="field">内容</label><textarea id="fOther" placeholder="記録したいこと"></textarea>';if(t==='健康・通院')h='<label class="field">状態・症状・処置</label><input id="fHealth" placeholder="症状、病院名、投薬など">';$('dynamicFields').innerHTML=h}
 $('rPhoto').onchange=async e=>selectedRecordPhoto=await readPhoto(e.target.files[0]);
 $('recordForm').onsubmit=e=>{e.preventDefault();const t=$('rType').value;const fields={};document.querySelectorAll('#dynamicFields input,#dynamicFields select').forEach(x=>fields[x.id]=x.value);if(t==='体重'&&!fields.fWeight){alert('体重を入力してください');return}if(t==='長さ'&&!fields.fLength){alert('長さを入力してください');return}if(t==='測定'&&!fields.fWeight&&!fields.fLength){alert('体重か長さを入力してください');return}const id=$('recordId').value;const existing=id?db.records.find(r=>r.id===id):null;if(existing){existing.petId=$('rPet').value;existing.type=t;existing.date=$('rDate').value;existing.fields=fields;existing.notes=$('rNotes').value;existing.photo=selectedRecordPhoto||''}else db.records.unshift({id:crypto.randomUUID(),petId:$('rPet').value,type:t,date:$('rDate').value,fields,notes:$('rNotes').value,photo:selectedRecordPhoto||''});selectedRecordPhoto=null;closeDialog('recordDialog');save()};
@@ -265,7 +325,7 @@ function renderHome(){
   const feeding=elapsedSummary('給餌',r=>r.fields?.fResult||'記録あり');
   const shedding=elapsedSummary('脱皮',r=>{
    const status=r.fields?.fShed||'';
-   return status.includes('きれい')?'〇':status.includes('一部')?'△':status?'⚠':'記録あり';
+   return status.includes('きれい')?'🟢':status.includes('一部')?'🟡':status?'⚠️':'記録あり';
   });
   const wasteSummary=elapsedSummary('排泄',r=>r.fields?.fWaste||'記録あり');
   const cleaningSummary=elapsedSummary('お掃除',r=>'済');
@@ -277,7 +337,7 @@ function renderHome(){
    const sign=diff>0?'+':diff<0?'−':'±';
    return `前回比 ${sign}${Math.abs(diff).toLocaleString('ja-JP',{maximumFractionDigits:1})} ${unit}`;
   };
-  const stat=(key,label,value,sub,icon,recordType)=>db.homeTileVisibility?.[key]===false?'':`<button type="button" class="stat stat-tap" data-tile="${key}" ${recordType?`onclick="openRecord('${recordType}','${p.id}')"`:''}><label>${icon} ${label}</label><strong>${value||'--'}</strong>${sub?`<small>${sub}</small>`:''}</button>`;
+  const stat=(key,label,value,sub,icon,recordType)=>db.homeTileVisibility?.[key]===false?'':`<button type="button" class="stat stat-tap" data-tile="${key}" ${recordType?`onclick="openHomeTile('${recordType}','${p.id}')"`:''}><label>${icon} ${label}</label><strong>${value||'--'}</strong>${sub?`<small>${sub}</small>`:''}</button>`;
   return `<div class="card hero home-pet-panel"><div class="hero-top">${p.photo?`<img src="${p.photo}">`:'🐍'}</div><div class="hero-body"><div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2><div class="small">${esc(p.species||'種類未登録')} · ${esc(p.sex||'性別不明')}</div></div></div><div class="grid" style="margin-top:12px">
   ${stat('age','年齢',ageText(p.birthday),'','🎂')}
   ${stat('arrival','お迎えから',daysTogether(p.arrival),'','🏠')}
@@ -329,7 +389,10 @@ $('gPhoto').onchange=async e=>{try{selectedGalleryPhoto=await compressPhoto(e.ta
 $('galleryForm').onsubmit=e=>{e.preventDefault();if(!selectedGalleryPhoto){alert('写真を選択してください');return;}db.galleryPhotos=db.galleryPhotos||[];db.galleryPhotos.unshift({id:crypto.randomUUID(),petId:$('gPet').value||'',date:$('gDate').value,title:$('gTitle').value.trim(),notes:$('gNotes').value.trim(),photo:selectedGalleryPhoto});selectedGalleryPhoto=null;closeDialog('galleryDialog');save();};
 function deleteGalleryPhoto(id){if(confirm('この写真をギャラリーから削除しますか？')){db.galleryPhotos=(db.galleryPhotos||[]).filter(x=>x.id!==id);save();}}
 function renderAlbum(){const records=db.records.filter(r=>r.photo).map(r=>({id:r.id,photo:r.photo,petId:r.petId,date:dateKey(r.date),title:r.type,notes:r.notes,source:'record'}));const own=(db.galleryPhotos||[]).map(x=>({...x,source:'gallery'}));const a=[...records,...own].sort((x,y)=>(y.date||'').localeCompare(x.date||''));$('albumGrid').innerHTML=a.length?a.map(x=>`<div class="card" style="padding:8px"><img src="${x.photo}" alt="${esc(x.title||'飼育写真')}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px"><div style="font-size:12px;margin-top:7px">${esc(x.title||'写真')} ${x.petId?`· ${esc(petName(x.petId))}`:'· 共通'}</div><div class="small">${esc(x.date||'')}</div>${x.notes?`<div class="small" style="margin-top:5px">${esc(x.notes)}</div>`:''}${x.source==='gallery'?`<button class="btn ghost danger full" style="margin-top:8px" onclick="deleteGalleryPhoto('${x.id}')">削除</button>`:`<div class="small">記録から追加</div>`}</div>`).join(''):'<div class="empty" style="grid-column:1/-1">写真はまだありません。「＋ 写真を追加」から登録できます。</div>'}
-function renderAll(){renderHome();renderPets();renderEnvironment();renderRecords();renderCalendar();renderUpcoming();renderAlbum()}
+function renderAll(){
+ const jobs=[['home',renderHome],['pets',renderPets],['environment',renderEnvironment],['records',renderRecords],['calendar',renderCalendar],['upcoming',renderUpcoming],['album',renderAlbum]];
+ jobs.forEach(([name,fn])=>{try{fn()}catch(error){console.error('REPTILE NOTE render error:',name,error)}});
+}
 function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='reptile-note-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href)}
 function importData(){const f=$('importFile').files[0];if(!f){alert('バックアップファイルを選択してください');return}const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x.pets)||!Array.isArray(x.records)||!Array.isArray(x.events))throw 0;if(confirm('現在のデータを置き換えて復元しますか？')){db=x;save();closeDialog('settingsDialog');alert('復元しました')}}catch(e){alert('ファイル形式が正しくありません')}};r.readAsText(f)}
 function clearData(){if(confirm('すべての個体・記録・予定を削除します。よろしいですか？')){db={pets:[],records:[],events:[],galleryPhotos:[],owner:{},hospital:{}};save();closeDialog('settingsDialog')}}
@@ -365,15 +428,96 @@ enhanceNumberSteppers();
 const numberStepperObserver=new MutationObserver(mutations=>mutations.forEach(m=>m.addedNodes.forEach(node=>{if(node.nodeType===1)enhanceNumberSteppers(node)})));
 numberStepperObserver.observe(document.body,{childList:true,subtree:true});
 
-function enforceFourDigitDateYear(input){
- if(!input || !['date','datetime-local'].includes(input.type))return;
- input.addEventListener('change',()=>{
-  if(!input.value)return;
-  const year=Number(input.value.slice(0,4));
-  if(!/^\d{4}/.test(input.value)||year<1||year>9999){input.setCustomValidity('年は4桁（0001〜9999）で入力してください。');input.reportValidity();input.value='';}
-  else input.setCustomValidity('');
+
+(function initModernDatePickers(){
+ const dateInputs=[...document.querySelectorAll('input[type="date"],input[type="datetime-local"]')];
+ const pad=n=>String(n).padStart(2,'0');
+ const fmt=v=>v?(v.slice(0,10).replaceAll('-','/')+(v.length>10?' '+v.slice(11,16):'')):'';
+ const picker=document.createElement('div');
+ picker.className='date-picker-overlay';
+ picker.innerHTML=`<div class="date-picker-card" role="dialog" aria-modal="true" aria-label="日付を選択">
+  <div class="date-picker-top"><div><small>DATE SELECT</small><strong id="dpSelected">日付を選択</strong></div><button type="button" class="dp-close" aria-label="閉じる">×</button></div>
+  <div class="date-picker-month"><button type="button" id="dpPrev" aria-label="前の月">‹</button><strong id="dpMonth"></strong><button type="button" id="dpNext" aria-label="次の月">›</button></div>
+  <div class="date-picker-week"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div>
+  <div class="date-picker-days" id="dpDays"></div>
+  <div class="dp-time-row" id="dpTimeRow"><label>時刻 <input type="time" id="dpTime" value="12:00"></label></div>
+  <div class="date-picker-actions"><button type="button" id="dpClear">クリア</button><span></span><button type="button" id="dpToday">今日</button><button type="button" id="dpApply">決定</button></div>
+ </div>`;
+ document.body.appendChild(picker);
+ let active=null, view=new Date(), chosen=null;
+ const $dp=id=>picker.querySelector('#'+id);
+ function dateFromValue(value){
+  if(!value)return new Date();
+  const [y,m,d]=value.slice(0,10).split('-').map(Number);
+  return new Date(y||2000,(m||1)-1,d||1);
+ }
+ function render(){
+  const y=view.getFullYear(),m=view.getMonth();
+  $dp('dpMonth').textContent=`${y}年 ${m+1}月`;
+  $dp('dpSelected').textContent=chosen?`${chosen.getFullYear()}/${pad(chosen.getMonth()+1)}/${pad(chosen.getDate())}`:'日付を選択';
+  const first=new Date(y,m,1),start=first.getDay(),days=new Date(y,m+1,0).getDate();
+  const prevDays=new Date(y,m,0).getDate();
+  let cells='';
+  for(let i=0;i<42;i++){
+   let day,monthOffset=0;
+   if(i<start){day=prevDays-start+i+1;monthOffset=-1}
+   else if(i>=start+days){day=i-start-days+1;monthOffset=1}
+   else day=i-start+1;
+   const d=new Date(y,m+monthOffset,day);
+   const selected=chosen&&d.toDateString()===chosen.toDateString();
+   const today=d.toDateString()===new Date().toDateString();
+   cells+=`<button type="button" class="dp-day${monthOffset?' outside':''}${selected?' selected':''}${today?' today':''}" data-date="${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}">${day}</button>`;
+  }
+  $dp('dpDays').innerHTML=cells;
+ }
+ function open(input,display){
+  active={input,display};chosen=dateFromValue(input.value);view=new Date(chosen.getFullYear(),chosen.getMonth(),1);
+  const isDateTime=input.type==='datetime-local';
+  $dp('dpTimeRow').hidden=!isDateTime;
+  $dp('dpTime').value=isDateTime&&input.value.length>10?input.value.slice(11,16):'12:00';
+  render();picker.classList.add('open');
+ }
+ function close(){picker.classList.remove('open');active=null}
+ dateInputs.forEach(input=>{
+  const wasRequired=input.required||input.hasAttribute('required');
+  input.min=input.type==='date'?'0001-01-01':'0001-01-01T00:00';
+  input.max=input.type==='date'?'9999-12-31':'9999-12-31T23:59';
+  input.removeAttribute('required');
+  input.classList.add('native-date-value');
+  const wrap=document.createElement('div');wrap.className='date-input-wrap';
+  input.parentNode.insertBefore(wrap,input);wrap.appendChild(input);
+  const display=document.createElement('input');display.type='text';display.readOnly=true;display.className='date-display';display.placeholder=input.type==='date'?'YYYY/MM/DD':'YYYY/MM/DD HH:mm';display.setAttribute('aria-label','日付');
+  display.required=wasRequired;
+  const btn=document.createElement('button');btn.type='button';btn.className='date-open-btn';btn.innerHTML='▦';btn.setAttribute('aria-label','カレンダーを開く');
+  wrap.append(display,btn);
+  const sync=()=>{display.value=fmt(input.value);display.setCustomValidity(input.required&&!input.value?'日付を選択してください。':'')};
+  // Keep the visible field synchronized with application code that assigns input.value.
+  const proto=HTMLInputElement.prototype;
+  const descriptor=Object.getOwnPropertyDescriptor(proto,'value');
+  Object.defineProperty(input,'value',{configurable:true,get(){return descriptor.get.call(this)},set(v){descriptor.set.call(this,v);sync()}});
+  input.addEventListener('change',sync);
+  btn.addEventListener('click',()=>open(input,display));
+  display.addEventListener('click',()=>open(input,display));
+  sync();
+  if(display.required)display.setAttribute('required','');
  });
-}
-document.querySelectorAll('input[type="date"],input[type="datetime-local"]').forEach(enforceFourDigitDateYear);
+ $dp('dpPrev').addEventListener('click',()=>{view.setMonth(view.getMonth()-1);render()});
+ $dp('dpNext').addEventListener('click',()=>{view.setMonth(view.getMonth()+1);render()});
+ $dp('dpDays').addEventListener('click',e=>{
+  const b=e.target.closest('[data-date]');if(!b)return;
+  const [y,m,d]=b.dataset.date.split('-').map(Number);chosen=new Date(y,m-1,d);view=new Date(y,m-1,1);render();
+ });
+ $dp('dpClear').addEventListener('click',()=>{if(active){active.input.value='';active.input.dispatchEvent(new Event('change',{bubbles:true}));active.display.value='';close()}});
+ $dp('dpToday').addEventListener('click',()=>{chosen=new Date();view=new Date(chosen.getFullYear(),chosen.getMonth(),1);render()});
+ $dp('dpApply').addEventListener('click',()=>{
+  if(!active||!chosen)return;
+  const y=chosen.getFullYear(),m=pad(chosen.getMonth()+1),d=pad(chosen.getDate());
+  active.input.value=`${y}-${m}-${d}`+(active.input.type==='datetime-local'?`T${$dp('dpTime').value||'12:00'}`:'');
+  active.input.dispatchEvent(new Event('input',{bubbles:true}));active.input.dispatchEvent(new Event('change',{bubbles:true}));close();
+ });
+ picker.querySelector('.dp-close').addEventListener('click',close);
+ picker.addEventListener('click',e=>{if(e.target===picker)close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+})();
 </script>
 </body></html>
