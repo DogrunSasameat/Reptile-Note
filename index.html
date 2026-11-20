@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#111827">
 <meta name="description" content="爬虫類の飼育記録・健康管理アプリ">
 <link rel="manifest" href="manifest.webmanifest">
-<title>REPTILE QUEST</title>
+<title>REPTILE NOTE</title>
 <style>
 :root{--bg:#0b1020;--panel:#151d30;--panel2:#1d2940;--line:#2b3954;--text:#f1f5f9;--muted:#9aa9bf;--lime:#b8f36b;--cyan:#7de3df;--orange:#ffbd69;--red:#ff7d86}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 20% -10%,#24334e 0,transparent 45%),var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;padding-bottom:84px}
@@ -18,17 +18,27 @@ h1{font-size:23px;margin:12px 4px 4px}h2{font-size:16px;margin:0 0 12px}.muted{c
 .card{background:linear-gradient(145deg,#19243a,#121a2c);border:1px solid var(--line);border-radius:18px;padding:15px;margin:12px 0;box-shadow:0 8px 28px #0003}
 .hero{padding:0;overflow:hidden}.hero-top{height:150px;background:linear-gradient(120deg,#243c43,#19253d 60%,#3d3a27);display:flex;align-items:center;justify-content:center;font-size:66px;position:relative}.hero-top img{width:100%;height:100%;object-fit:cover}.hero-body{padding:15px}
 .pill{display:inline-block;border:1px solid #526344;color:var(--lime);border-radius:99px;padding:4px 9px;font-size:11px;margin:3px 4px 3px 0}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat{background:#0e1728;border:1px solid var(--line);border-radius:13px;padding:12px}.stat label{display:block;color:var(--muted);font-size:10px;letter-spacing:.1em}.stat strong{font-size:22px;display:block;margin:4px 0}.stat small{color:var(--muted);font-size:11px}
+.switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}.switch{position:relative;display:inline-block;width:48px;height:28px;flex:0 0 48px}.switch input{opacity:0;width:0;height:0}.switch-track{position:absolute;inset:0;background:#475569;border-radius:99px;transition:.2s}.switch-track:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}.switch input:checked+.switch-track{background:var(--accent)}.switch input:checked+.switch-track:before{transform:translateX(20px)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat{background:#0e1728;border:1px solid var(--line);border-radius:13px;padding:12px}.stat label{display:block;color:var(--muted);font-size:10px;letter-spacing:.1em}.stat strong{font-size:22px;display:block;margin:4px 0}.stat small{color:var(--muted);font-size:11px}
 .row{display:flex;align-items:center;justify-content:space-between;gap:8px}.btn{border:1px solid var(--line);background:#26354e;color:var(--text);border-radius:12px;padding:10px 13px;font-weight:700}.btn.primary{background:var(--lime);color:#17210e;border:0}.btn.ghost{background:transparent}.btn.danger{color:var(--red)}.btn.full{width:100%}
 .actions{display:flex;gap:8px;flex-wrap:wrap}.actions .btn{flex:1}
 nav{position:fixed;bottom:0;left:0;right:0;background:#0e1627ed;backdrop-filter:blur(16px);border-top:1px solid var(--line);display:flex;justify-content:center;padding:8px 5px calc(8px + env(safe-area-inset-bottom));z-index:5}
 nav button{background:none;border:0;color:var(--muted);font-size:11px;flex:1;max-width:125px;padding:5px 0;display:flex;flex-direction:column;align-items:center;gap:3px}nav button b{display:grid;place-items:center;font-size:21px;line-height:1.2;font-weight:500}nav button.active{color:var(--lime)}nav button:focus-visible{outline:2px solid var(--lime);outline-offset:-2px;border-radius:10px}
 input,select,textarea{width:100%;background:#0c1526;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:11px;margin:5px 0 12px}textarea{min-height:76px;resize:vertical}label.field{display:block;color:var(--muted);font-size:12px}
+/* Unified file picker styling */
+input[type="file"]{display:block;width:100%;min-width:0;padding:9px 10px;margin:6px 0 12px;background:linear-gradient(145deg,#19243a,#121a2c);color:var(--muted);border:1px dashed #526344;border-radius:12px;font-size:12px;cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s}
+input[type="file"]:hover{border-color:var(--lime);background:#1b2940;box-shadow:0 0 0 2px #b8f36b18}
+input[type="file"]:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+input[type="file"]::file-selector-button{font:inherit;font-weight:700;color:#17210e;background:var(--lime);border:0;border-radius:8px;padding:8px 12px;margin:0 10px 0 0;cursor:pointer;transition:filter .18s}
+input[type="file"]::file-selector-button:hover{filter:brightness(1.08)}
+input[type="file"]::-webkit-file-upload-button{font:inherit;font-weight:700;color:#17210e;background:var(--lime);border:0;border-radius:8px;padding:8px 12px;margin:0 10px 0 0;cursor:pointer}
+
 form .btn{margin-top:4px}
 .listitem{padding:11px 0;border-bottom:1px solid var(--line)}.listitem:last-child{border:0}
 .tag{font-size:10px;border-radius:6px;padding:3px 7px;background:#273650;color:var(--cyan)}
 .empty{text-align:center;color:var(--muted);padding:22px 8px;font-size:13px}
+.pet-tabs{display:flex;gap:8px;overflow-x:auto;padding:8px 2px 4px;margin:4px 0 8px;scrollbar-width:thin}.pet-tab{flex:0 0 auto;border:1px solid var(--line);background:#111b2d;color:var(--muted);border-radius:999px;padding:9px 16px;font-weight:700;white-space:nowrap}.pet-tab.active{background:var(--lime);border-color:var(--lime);color:#17210e}.home-pet-panel{animation:fadeIn .16s ease}@keyframes fadeIn{from{opacity:.65}to{opacity:1}}
 .petrow{display:flex;gap:12px;align-items:center}.avatar{width:54px;height:54px;border-radius:14px;background:#273b3d;display:grid;place-items:center;font-size:28px;overflow:hidden;flex-shrink:0}.avatar img{width:100%;height:100%;object-fit:cover}
+.settings-row{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left;background:#19243a;color:var(--text);border:1px solid var(--line);border-radius:13px;padding:14px;margin:7px 0}.settings-row span{display:flex;flex-direction:column;gap:4px}.settings-row small{font-size:11px;color:var(--muted)}.settings-row strong{font-size:22px;color:var(--muted)}
 dialog{background:#121c2e;color:var(--text);border:1px solid var(--line);border-radius:18px;width:min(94vw,520px);max-height:88vh;overflow:auto;padding:18px}dialog::backdrop{background:#0009}.close{float:right;background:none;border:0;color:var(--muted);font-size:22px}
 .photo-preview{max-width:100%;max-height:170px;border-radius:10px;display:block;margin:5px 0 12px}
 .settings-section{padding:14px 0;border-bottom:1px solid var(--line)}.settings-section:last-of-type{border-bottom:0}.settings-section h3{font-size:14px;margin:0 0 8px}.notice{border-left:3px solid var(--orange);padding:9px 11px;background:#29271f;border-radius:8px;font-size:12px;color:#f7d9aa;margin:10px 0}
@@ -37,13 +47,12 @@ footer{text-align:center;color:#64748b;font-size:10px;padding:24px 0}
 </style>
 </head>
 <body>
-<header><div><div class="logo">REPTILE <span>QUEST</span></div><div class="sub">YOUR REPTILE COMPANION DATABASE</div></div><button class="btn ghost" onclick="openSettings()">⚙</button></header>
+<header><div><div class="logo">REPTILE <span>NOTE</span></div><div class="sub">YOUR REPTILE COMPANION DATABASE</div></div><button class="btn ghost" onclick="openSettings()">⚙</button></header>
 <main class="wrap">
 <section id="home" class="screen active">
- <div class="row"><div><h1>ホーム</h1><div class="small">今日の飼育ステータス</div></div><button class="btn primary" onclick="openPetForm()">＋ 個体追加</button></div>
- <div id="homePets"></div>
+ <div class="row"><div><h1>ホーム</h1><div class="small">今日の飼育ステータス</div></div><div class="actions"><button class="btn" onclick="openTileSettings()">表示項目を編集</button><button class="btn primary" onclick="openPetForm()">＋ 個体追加</button></div></div>
+ <div id="homePetTabs" class="pet-tabs" role="tablist" aria-label="表示する個体"></div><div id="homePets" aria-live="polite"></div>
  <div class="card"><div class="row"><h2>📅 今日・これからの予定</h2><button class="btn ghost" onclick="show('calendar')">一覧 →</button></div><div id="upcoming"></div></div>
- <div class="card"><h2>⚡ クイック記録</h2><div class="actions"><button class="btn" onclick="quickRecord('給餌')">🍽 給餌</button><button class="btn" onclick="quickRecord('体重')">⚖ 体重</button><button class="btn" onclick="quickRecord('温湿度')">🌡 温湿度</button></div></div>
 </section>
 <section id="pets" class="screen"><div class="row"><h1>個体一覧</h1><button class="btn primary" onclick="openPetForm()">＋ 追加</button></div><div id="petList"></div></section>
 <section id="environment" class="screen"><div class="row"><div><h1>飼育環境</h1><div class="small">ケージ・保温器具・床材などの管理</div></div><button class="btn primary" onclick="openEnvironmentForm()">＋ 環境を編集</button></div><div id="environmentList"></div></section>
@@ -52,17 +61,22 @@ footer{text-align:center;color:#64748b;font-size:10px;padding:24px 0}
 <section id="album" class="screen"><div class="row"><div><h1>写真・ギャラリー</h1><div class="small">飼育記録に添付した写真と、ここに追加した写真をまとめて表示します。</div></div><button class="btn primary" onclick="openGalleryForm()">＋ 写真を追加</button></div><div id="albumGrid" class="grid"></div></section>
 </main>
 <nav aria-label="メインメニュー"><button class="active" data-screen="home" onclick="show('home')" aria-label="ホーム"><b>🏠</b>ホーム</button><button data-screen="pets" onclick="show('pets')" aria-label="個体"><b>🐍</b>個体</button><button data-screen="environment" onclick="show('environment')" aria-label="飼育環境"><b>🏡</b>環境</button><button data-screen="records" onclick="show('records')" aria-label="飼育記録"><b>📝</b>記録</button><button data-screen="calendar" onclick="show('calendar')" aria-label="カレンダー"><b>📅</b>予定</button><button data-screen="album" onclick="show('album')" aria-label="写真"><b>🖼️</b>写真</button></nav>
+<dialog id="tileDialog"><button class="close" onclick="closeDialog('tileDialog')">×</button><h2>ホームの表示項目</h2><p class="small">表示したい項目をオンにしてください。変更はすぐにホームへ反映されます。</p><div id="tileSwitches"></div><button class="btn full" style="margin-top:14px" onclick="closeDialog('tileDialog')">閉じる</button></dialog>
 <dialog id="petDialog"><button class="close" onclick="closeDialog('petDialog')">×</button><h2>個体データ</h2><form id="petForm"><input type="hidden" id="petId"><label class="field">名前 *</label><input id="petName" required placeholder="例：ククルカン"><label class="field">種類</label><input id="petSpecies" placeholder="例：ボールパイソン"><div class="grid"><div><label class="field">性別</label><select id="petSex"><option>不明</option><option>♀</option><option>♂</option></select></div><div><label class="field">お迎え日</label><input id="petArrival" type="date"></div></div><label class="field">誕生日（分かる場合）</label><input id="petBirthday" type="date"><label class="field">モルフ・品種</label><input id="petMorph" placeholder="任意"><label class="field">写真</label><input id="petPhoto" type="file" accept="image/*"><img id="petPhotoPreview" class="photo-preview" hidden><label class="field">プロフィールメモ</label><textarea id="petNotes"></textarea><button class="btn primary full" type="submit">保存する</button></form></dialog>
 <dialog id="environmentDialog"><button class="close" onclick="closeDialog('environmentDialog')">×</button><h2>飼育環境を編集</h2><form id="environmentForm"><input type="hidden" id="envPetId"><div class="small" id="envPetName"></div><h3>ケージ・飼育容器</h3><label class="field">種類・製品名</label><input id="envCage" placeholder="例：レプタイルボックス"><label class="field">サイズ・寸法</label><input id="envCageSize" placeholder="例：幅○×奥行○×高さ○ cm"><label class="field">素材・特徴</label><input id="envCageMaterial" placeholder="例：プラスチック製、通気口あり"><h3>保温・温湿度管理</h3><label class="field">保温器具</label><input id="envHeater" placeholder="例：パネルヒーター"><label class="field">サーモスタット</label><input id="envThermostat" placeholder="製品名・設定温度など"><label class="field">目標温度・湿度</label><div class="grid"><div><label class="field">温度</label><input id="envTargetTemp" placeholder="例：ホット 31℃"></div><div><label class="field">湿度</label><input id="envTargetHumidity" placeholder="例：60〜70％"></div></div><h3>レイアウト・用品</h3><label class="field">床材</label><input id="envSubstrate" placeholder="使用している床材"><label class="field">シェルター</label><input id="envHide" placeholder="種類・素材・設置場所"><label class="field">水入れ</label><input id="envWater" placeholder="大きさ・種類など"><label class="field">照明・UVB</label><input id="envLighting" placeholder="使用している場合"><label class="field">その他の設備・レイアウト</label><textarea id="envOther" placeholder="登り木、温湿度計、目隠しなど"></textarea><label class="field">環境メモ</label><textarea id="envNotes" placeholder="配置や変更履歴、気になることなど"></textarea><button class="btn primary full" type="submit">環境を保存</button></form></dialog>
 <dialog id="recordDialog"><button class="close" onclick="closeDialog('recordDialog')">×</button><h2>飼育記録を追加</h2><form id="recordForm"><label class="field">個体 *</label><select id="rPet" required></select><label class="field">記録タイプ</label><select id="rType" onchange="recordFields()"><option>温湿度</option><option>給餌</option><option>体重</option><option>長さ</option><option>脱皮</option><option>排泄</option><option>お掃除</option><option>その他</option><option>健康・通院</option><option>メモ</option></select><label class="field">日時</label><input id="rDate" type="datetime-local" required><div id="dynamicFields"></div><label class="field">メモ</label><textarea id="rNotes" placeholder="気づいたこと、様子など"></textarea><label class="field">写真（任意）</label><input id="rPhoto" type="file" accept="image/*"><button class="btn primary full" type="submit">記録を保存</button></form></dialog>
 <dialog id="galleryDialog"><button class="close" onclick="closeDialog('galleryDialog')">×</button><h2>写真を追加</h2><form id="galleryForm"><label class="field">個体</label><select id="gPet"></select><label class="field">写真 *</label><input id="gPhoto" type="file" accept="image/*" required><img id="gPhotoPreview" class="photo-preview" hidden><label class="field">撮影日・記録日</label><input id="gDate" type="date" required><label class="field">タイトル</label><input id="gTitle" placeholder="例：お迎えした日、脱皮後"><label class="field">メモ</label><textarea id="gNotes" placeholder="写真についてのメモ"></textarea><button class="btn primary full" type="submit">写真を保存</button></form></dialog>
 <dialog id="eventDialog"><button class="close" onclick="closeDialog('eventDialog')">×</button><h2>予定を追加</h2><form id="eventForm"><label class="field">個体</label><select id="ePet"></select><label class="field">予定名 *</label><input id="eTitle" required placeholder="例：給餌予定、体重測定"><label class="field">日時 *</label><input id="eDate" type="datetime-local" required><label class="field">メモ</label><textarea id="eNotes"></textarea><button class="btn primary full">予定を保存</button></form></dialog>
-<dialog id="settingsDialog"><button class="close" onclick="closeDialog('settingsDialog')">×</button><h2>設定</h2>
-<section class="settings-section"><h3>🔔 通知管理</h3><p class="small">誕生日やお迎え記念日などのお知らせを管理します。</p><button class="btn full" onclick="enableNotifications()">通知の許可を確認する</button><p class="small">通知は対応ブラウザでアプリを開いた際に予定を確認する方式です。アプリを閉じている間の通知は今後対応予定です。</p></section>
-<section class="settings-section"><h3>💾 データ管理</h3><div class="notice">データはこのブラウザ内に保存されます。ブラウザのデータ消去や端末故障に備えて、定期的にバックアップしてください。</div><button class="btn full" onclick="exportData()">⬇ データをバックアップ</button><label class="field" style="margin-top:14px">バックアップから復元</label><input type="file" id="importFile" accept="application/json"><button class="btn full" onclick="importData()">⬆ バックアップを復元</button><button class="btn danger full" style="margin-top:12px" onclick="clearData()">すべてのデータを削除</button></section>
-<section class="settings-section"><h3>👤 飼い主情報</h3><p class="small">飼い主の名前や連絡先などを登録できるようにする予定です。</p><div class="small muted">今後のアップデートで追加予定</div></section>
-<section class="settings-section"><h3>🎨 表示設定</h3><p class="small">ライトモード（白）・ダークモードの切り替えに対応予定です。</p><div class="small muted">今後のアップデートで追加予定</div></section>
-<p class="small">REPTILE QUEST prototype 0.2.7</p></dialog>
+<dialog id="settingsDialog"><button class="close" onclick="closeDialog('settingsDialog')">×</button><h2>設定</h2><p class="small">管理したい項目を選択してください。</p>
+<button class="settings-row" onclick="openSettingDetail('owner')"><span>👤 <b>飼い主情報</b><small>名前・連絡先・住所</small></span><strong>›</strong></button>
+<button class="settings-row" onclick="openSettingDetail('hospital')"><span>🏥 <b>病院情報</b><small>かかりつけ病院・電話番号</small></span><strong>›</strong></button>
+<button class="settings-row" onclick="openSettingDetail('notifications')"><span>🔔 <b>通知</b><small>記念日などのお知らせ</small></span><strong>›</strong></button>
+<button class="settings-row" onclick="openSettingDetail('data')"><span>💾 <b>データ管理</b><small>バックアップ・復元</small></span><strong>›</strong></button>
+<button class="settings-row" onclick="openSettingDetail('display')"><span>🎨 <b>表示設定</b><small>テーマなどの表示方法</small></span><strong>›</strong></button>
+<p class="small" style="margin-top:16px">REPTILE NOTE prototype 0.3.2</p></dialog>
+<dialog id="settingDetailDialog"><button class="close" onclick="closeDialog('settingDetailDialog')">×</button><button class="btn ghost" onclick="closeDialog('settingDetailDialog');openSettings()">← 設定に戻る</button><h2 id="settingDetailTitle" style="margin-top:14px"></h2><div id="settingDetailBody"></div></dialog>
+<dialog id="ownerEditDialog"><button class="close" onclick="closeDialog('ownerEditDialog')">×</button><h2>飼い主情報を編集</h2><form id="ownerForm"><label class="field">名前</label><input id="ownerName"><label class="field">電話番号</label><input id="ownerPhone" type="tel"><label class="field">メールアドレス</label><input id="ownerEmail" type="email"><label class="field">住所</label><textarea id="ownerAddress"></textarea><label class="field">メモ</label><textarea id="ownerNotes"></textarea><button class="btn primary full">保存</button></form></dialog>
+<dialog id="hospitalEditDialog"><button class="close" onclick="closeDialog('hospitalEditDialog')">×</button><h2>病院情報を編集</h2><form id="hospitalForm"><label class="field">病院名</label><input id="hospitalName"><label class="field">電話番号</label><input id="hospitalPhone" type="tel"><label class="field">住所</label><textarea id="hospitalAddress"></textarea><label class="field">診療時間・休診日</label><textarea id="hospitalHours"></textarea><label class="field">Webサイト</label><input id="hospitalUrl" type="url" placeholder="https://"><label class="field">メモ</label><textarea id="hospitalNotes"></textarea><button class="btn primary full">保存</button></form></dialog>
 <script>
 const KEY='reptileQuestData_v1';
 let db={pets:[],records:[],events:[],galleryPhotos:[]};let monthCursor=new Date();let selectedPhoto=null,selectedRecordPhoto=null;
@@ -73,6 +87,20 @@ function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===id));renderAll()}
 function closeDialog(id){$(id).close()}
 function openSettings(){$('settingsDialog').showModal()}
+function openSettingDetail(kind){
+ const titles={owner:'👤 飼い主情報',hospital:'🏥 病院情報',notifications:'🔔 通知',data:'💾 データ管理',display:'🎨 表示設定'};
+ $('settingDetailTitle').textContent=titles[kind]||'設定';let html='';
+ if(kind==='owner'){const x=db.owner||{};html=`<div class="card"><div class="listitem"><span class="small">名前</span><div>${esc(x.name||'未登録')}</div></div><div class="listitem"><span class="small">電話番号</span><div>${esc(x.phone||'未登録')}</div></div><div class="listitem"><span class="small">メールアドレス</span><div>${esc(x.email||'未登録')}</div></div><div class="listitem"><span class="small">住所</span><div>${esc(x.address||'未登録')}</div></div><div class="listitem"><span class="small">メモ</span><div>${esc(x.notes||'未登録')}</div></div></div><button class="btn primary full" onclick="editOwner()">情報を編集</button>`;}
+ if(kind==='hospital'){const x=db.hospital||{};html=`<div class="card"><div class="listitem"><span class="small">病院名</span><div>${esc(x.name||'未登録')}</div></div><div class="listitem"><span class="small">電話番号</span><div>${esc(x.phone||'未登録')}</div></div><div class="listitem"><span class="small">住所</span><div>${esc(x.address||'未登録')}</div></div><div class="listitem"><span class="small">診療時間・休診日</span><div>${esc(x.hours||'未登録')}</div></div><div class="listitem"><span class="small">Webサイト</span><div>${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.url)}</a>`:'未登録'}</div></div><div class="listitem"><span class="small">メモ</span><div>${esc(x.notes||'未登録')}</div></div></div><button class="btn primary full" onclick="editHospital()">情報を編集</button>`;}
+ if(kind==='notifications')html=`<div class="card"><p>誕生日やお迎え記念日などのお知らせを管理します。</p><button class="btn primary full" onclick="enableNotifications()">通知の許可を確認する</button><p class="small">通知は対応ブラウザでアプリを開いた際に予定を確認する方式です。アプリを閉じている間の通知は今後対応予定です。</p><p>現在の許可状態：<b>${('Notification' in window)?Notification.permission:'このブラウザは非対応'}</b></p></div>`;
+ if(kind==='data')html=`<div class="notice">データはこのブラウザ内に保存されます。端末故障やブラウザのデータ消去に備えて、定期的にバックアップしてください。</div><button class="btn full" onclick="exportData()">⬇ データをバックアップ</button><label class="field" style="margin-top:14px">バックアップから復元</label><input type="file" id="importFile" accept="application/json"><button class="btn full" onclick="importData()">⬆ バックアップを復元</button><button class="btn danger full" style="margin-top:12px" onclick="clearData()">すべてのデータを削除</button>`;
+ if(kind==='display')html=`<div class="card"><p>ライトモード（白）・ダークモードの切り替えは今後対応予定です。</p></div>`;
+ $('settingDetailBody').innerHTML=html;closeDialog('settingsDialog');$('settingDetailDialog').showModal();
+}
+function editOwner(){const x=db.owner||{};['Name','Phone','Email','Address','Notes'].forEach(k=>{const id='owner'+k;$(id).value=x[k.toLowerCase()]||''});$('ownerEditDialog').showModal()}
+function editHospital(){const x=db.hospital||{};['Name','Phone','Address','Hours','Url','Notes'].forEach(k=>{const id='hospital'+k;$(id).value=x[k.toLowerCase()]||''});$('hospitalEditDialog').showModal()}
+$('ownerForm').onsubmit=e=>{e.preventDefault();db.owner={name:$('ownerName').value.trim(),phone:$('ownerPhone').value.trim(),email:$('ownerEmail').value.trim(),address:$('ownerAddress').value.trim(),notes:$('ownerNotes').value.trim()};save();closeDialog('ownerEditDialog');openSettingDetail('owner')};
+$('hospitalForm').onsubmit=e=>{e.preventDefault();db.hospital={name:$('hospitalName').value.trim(),phone:$('hospitalPhone').value.trim(),address:$('hospitalAddress').value.trim(),hours:$('hospitalHours').value.trim(),url:$('hospitalUrl').value.trim(),notes:$('hospitalNotes').value.trim()};save();closeDialog('hospitalEditDialog');openSettingDetail('hospital')};
 function petName(id){return db.pets.find(p=>p.id===id)?.name||'削除済み個体'}
 function petOptions(select,includeAll=false){const previous=select.value;select.innerHTML=(includeAll?'<option value="">すべての個体</option>':'<option value="" disabled>個体を選択してください</option>')+db.pets.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');if(previous&&db.pets.some(p=>p.id===previous))select.value=previous;else if(!includeAll&&db.pets.length)select.value=db.pets[0].id;else if(includeAll)select.value=''}
 function openPetForm(id=''){const p=db.pets.find(x=>x.id===id)||{};$('petForm').reset();$('petId').value=p.id||'';['Name','Species','Sex','Arrival','Birthday','Morph','Notes'].forEach(k=>{$('pet'+k).value=p[{Name:'name',Species:'species',Sex:'sex',Arrival:'arrival',Birthday:'birthday',Morph:'morph',Notes:'notes'}[k]]|| (k==='Sex'?'不明':'')});selectedPhoto=p.photo||null;$('petPhotoPreview').hidden=!selectedPhoto;if(selectedPhoto)$('petPhotoPreview').src=selectedPhoto;$('petDialog').showModal()}
@@ -155,29 +183,37 @@ function daysTogether(arrival){
  if(Number.isNaN(a.getTime())||a>n)return '未登録';
  return `${Math.floor((n-a)/86400000)+1}日目`;
 }
+const HOME_TILES=[['age','年齢'],['arrival','お迎えからの日数'],['length','長さ'],['weight','重さ'],['food','ご飯'],['waste','排泄'],['temperature','温度'],['humidity','湿度'],['cleaning','お掃除'],['other','その他']];
+function openTileSettings(){if(!db.homeTileVisibility)db.homeTileVisibility={};$('tileSwitches').innerHTML=HOME_TILES.map(([key,label])=>`<div class="switch-row"><span>${label}</span><label class="switch"><input type="checkbox" ${db.homeTileVisibility[key]!==false?'checked':''} onchange="setHomeTile('${key}',this.checked)"><span class="switch-track"></span></label></div>`).join('');$('tileDialog').showModal()}
+function setHomeTile(key,visible){if(!db.homeTileVisibility)db.homeTileVisibility={};db.homeTileVisibility[key]=visible;localStorage.setItem(KEY,JSON.stringify(db));renderHome()}
+function selectHomePet(id){db.homeSelectedPetId=id;localStorage.setItem(KEY,JSON.stringify(db));renderHome()}
 function renderHome(){
- const el=$('homePets');
- el.innerHTML=db.pets.length?db.pets.map(p=>{
+ const el=$('homePets'),tabs=$('homePetTabs');
+ if(!db.pets.length){tabs.innerHTML='';el.innerHTML='<div class="empty">まだ個体がいません。「個体追加」から登録してください。</div>';return}
+ if(!db.pets.some(p=>p.id===db.homeSelectedPetId))db.homeSelectedPetId=db.pets[0].id;
+ tabs.innerHTML=db.pets.map(p=>`<button class="pet-tab ${p.id===db.homeSelectedPetId?'active':''}" role="tab" aria-selected="${p.id===db.homeSelectedPetId}" onclick="selectHomePet('${p.id}')">${esc(p.name)}</button>`).join('');
+ const p=db.pets.find(x=>x.id===db.homeSelectedPetId);
+ el.innerHTML=p?(()=>{
   const latest=type=>db.records.find(r=>r.petId===p.id&&r.type===type);
   const w=latest('体重'),l=latest('長さ'),t=latest('温湿度'),food=latest('給餌'),waste=latest('排泄'),clean=latest('お掃除');
   const latestTemp=db.records.find(r=>r.petId===p.id&&r.type==='温湿度'&&r.fields?.fTemp),latestHum=db.records.find(r=>r.petId===p.id&&r.type==='温湿度'&&r.fields?.fHum);
   const wf=w?.fields?.fWeight,lf=l?.fields?.fLength,tf=latestTemp?.fields?.fTemp,hf=latestHum?.fields?.fHum;
   const count=type=>db.records.filter(r=>r.petId===p.id&&r.type===type).length;
   const otherCount=db.records.filter(r=>r.petId===p.id&&['その他','メモ','健康・通院'].includes(r.type)).length;
-  const stat=(label,value,sub,icon)=>`<div class="stat"><label>${icon} ${label}</label><strong>${value||'--'}</strong><small>${sub||'記録なし'}</small></div>`;
-  return `<div class="card hero"><div class="hero-top">${p.photo?`<img src="${p.photo}">`:'🐍'}</div><div class="hero-body"><div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2><div class="small">${esc(p.species||'種類未登録')} · ${esc(p.sex||'性別不明')}</div></div><button class="btn" onclick="openPetForm('${p.id}')">編集</button></div><div class="grid" style="margin-top:12px">
-  ${stat('年齢',ageText(p.birthday),'誕生日から自動計算','🎂')}
-  ${stat('お迎えから',daysTogether(p.arrival),'お迎え日から自動計算','🏠')}
-  ${stat('長さ',lf?esc(lf)+' cm':'--',l?'最終記録 '+dateKey(l.date):'記録なし','📏')}
-  ${stat('重さ',wf?esc(wf)+' g':'--',w?'最終記録 '+dateKey(w.date):'記録なし','⚖️')}
-  ${stat('ご飯',food?esc(recordSummary(food)):'--',food?dateKey(food.date):'記録なし','🍽️')}
-  ${stat('排泄',waste?esc(waste.fields?.fWaste||recordSummary(waste)):'--',waste?dateKey(waste.date):'記録なし','🚽')}
-  ${stat('温度',tf?esc(tf)+' ℃':'--',latestTemp?dateKey(latestTemp.date):'記録なし','🌡️')}
-  ${stat('湿度',hf?esc(hf)+' %':'--',latestHum?dateKey(latestHum.date):'記録なし','💧')}
-  ${stat('お掃除',clean?esc(recordSummary(clean)):'--',`${count('お掃除')}件 · ${clean?dateKey(clean.date):'記録なし'}`,'🧹')}
-  ${stat('その他',`${otherCount}件`,'健康・通院／メモなど','📌')}
-  </div><div class="actions" style="margin-top:12px"><button class="btn primary" onclick="openRecord('給餌','${p.id}')">＋ ご飯</button><button class="btn" onclick="openRecord('排泄','${p.id}')">＋ 排泄</button><button class="btn" onclick="openRecord('温湿度','${p.id}')">＋ 温湿度</button><button class="btn" onclick="openRecord('お掃除','${p.id}')">＋ お掃除</button></div></div></div>`
- }).join(''):'<div class="empty">まだ個体がいません。「個体追加」から登録してください。</div>'
+  const stat=(key,label,value,sub,icon)=>db.homeTileVisibility?.[key]===false?'':`<div class="stat" data-tile="${key}"><label>${icon} ${label}</label><strong>${value||'--'}</strong><small>${sub||'記録なし'}</small></div>`;
+  return `<div class="card hero home-pet-panel"><div class="hero-top">${p.photo?`<img src="${p.photo}">`:'🐍'}</div><div class="hero-body"><div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2><div class="small">${esc(p.species||'種類未登録')} · ${esc(p.sex||'性別不明')}</div></div></div><div class="grid" style="margin-top:12px">
+  ${stat('age','年齢',ageText(p.birthday),'誕生日から自動計算','🎂')}
+  ${stat('arrival','お迎えから',daysTogether(p.arrival),'お迎え日から自動計算','🏠')}
+  ${stat('length','長さ',lf?esc(lf)+' cm':'--',l?'最終記録 '+dateKey(l.date):'記録なし','📏')}
+  ${stat('weight','重さ',wf?esc(wf)+' g':'--',w?'最終記録 '+dateKey(w.date):'記録なし','⚖️')}
+  ${stat('food','ご飯',food?esc(recordSummary(food)):'--',food?dateKey(food.date):'記録なし','🍽️')}
+  ${stat('waste','排泄',waste?esc(waste.fields?.fWaste||recordSummary(waste)):'--',waste?dateKey(waste.date):'記録なし','🚽')}
+  ${stat('temperature','温度',tf?esc(tf)+' ℃':'--',latestTemp?dateKey(latestTemp.date):'記録なし','🌡️')}
+  ${stat('humidity','湿度',hf?esc(hf)+' %':'--',latestHum?dateKey(latestHum.date):'記録なし','💧')}
+  ${stat('cleaning','お掃除',clean?esc(recordSummary(clean)):'--',`${count('お掃除')}件 · ${clean?dateKey(clean.date):'記録なし'}`,'🧹')}
+  ${stat('other','その他',`${otherCount}件`,'健康・通院／メモなど','📌')}
+  </div><div class="actions" style="margin-top:12px"><button class="btn primary" onclick="openRecord('給餌','${p.id}')">＋ ご飯</button><button class="btn" onclick="openRecord('排泄','${p.id}')">＋ 排泄</button><button class="btn" onclick="openRecord('体重','${p.id}')">＋ 体重</button><button class="btn" onclick="openRecord('長さ','${p.id}')">＋ 長さ</button><button class="btn" onclick="openRecord('温湿度','${p.id}')">＋ 温湿度</button><button class="btn" onclick="openRecord('お掃除','${p.id}')">＋ お掃除</button></div></div></div>`
+ })():''
 }
 function renderPets(){$('petList').innerHTML=db.pets.length?db.pets.map(p=>`<div class="card petrow"><div class="avatar">${p.photo?`<img src="${p.photo}">`:'🐍'}</div><div style="flex:1"><b>${esc(p.name)}</b><div class="small">${esc(p.species)} · ${esc(p.sex)}</div><div class="small">お迎え日：${esc(p.arrival||'未登録')}</div></div><button class="btn" onclick="openPetForm('${p.id}')">編集</button><button class="btn ghost danger" onclick="deletePet('${p.id}')">削除</button></div>`).join(''):'<div class="empty">個体を登録してください</div>'}
 function deletePet(id){if(confirm('個体と関連する記録・予定を削除しますか？')){db.pets=db.pets.filter(p=>p.id!==id);db.records=db.records.filter(r=>r.petId!==id);db.events=db.events.filter(e=>e.petId!==id);save()}}
@@ -217,9 +253,9 @@ $('galleryForm').onsubmit=e=>{e.preventDefault();if(!selectedGalleryPhoto){alert
 function deleteGalleryPhoto(id){if(confirm('この写真をギャラリーから削除しますか？')){db.galleryPhotos=(db.galleryPhotos||[]).filter(x=>x.id!==id);save();}}
 function renderAlbum(){const records=db.records.filter(r=>r.photo).map(r=>({id:r.id,photo:r.photo,petId:r.petId,date:dateKey(r.date),title:r.type,notes:r.notes,source:'record'}));const own=(db.galleryPhotos||[]).map(x=>({...x,source:'gallery'}));const a=[...records,...own].sort((x,y)=>(y.date||'').localeCompare(x.date||''));$('albumGrid').innerHTML=a.length?a.map(x=>`<div class="card" style="padding:8px"><img src="${x.photo}" alt="${esc(x.title||'飼育写真')}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px"><div style="font-size:12px;margin-top:7px">${esc(x.title||'写真')} ${x.petId?`· ${esc(petName(x.petId))}`:'· 共通'}</div><div class="small">${esc(x.date||'')}</div>${x.notes?`<div class="small" style="margin-top:5px">${esc(x.notes)}</div>`:''}${x.source==='gallery'?`<button class="btn ghost danger full" style="margin-top:8px" onclick="deleteGalleryPhoto('${x.id}')">削除</button>`:`<div class="small">記録から追加</div>`}</div>`).join(''):'<div class="empty" style="grid-column:1/-1">写真はまだありません。「＋ 写真を追加」から登録できます。</div>'}
 function renderAll(){renderHome();renderPets();renderEnvironment();renderRecords();renderCalendar();renderUpcoming();renderAlbum()}
-function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='reptile-quest-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href)}
+function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='reptile-note-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href)}
 function importData(){const f=$('importFile').files[0];if(!f){alert('バックアップファイルを選択してください');return}const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x.pets)||!Array.isArray(x.records)||!Array.isArray(x.events))throw 0;if(confirm('現在のデータを置き換えて復元しますか？')){db=x;save();closeDialog('settingsDialog');alert('復元しました')}}catch(e){alert('ファイル形式が正しくありません')}};r.readAsText(f)}
-function clearData(){if(confirm('すべての個体・記録・予定を削除します。よろしいですか？')){db={pets:[],records:[],events:[]};save();closeDialog('settingsDialog')}}
+function clearData(){if(confirm('すべての個体・記録・予定を削除します。よろしいですか？')){db={pets:[],records:[],events:[],galleryPhotos:[],owner:{},hospital:{}};save();closeDialog('settingsDialog')}}
 async function enableNotifications(){if(!('Notification'in window)){alert('このブラウザは通知に対応していません');return}const p=await Notification.requestPermission();if(p==='granted'){alert('通知を許可しました。アプリを開いた際に今日・明日の誕生日とお迎え記念日をお知らせします。');checkAnniversaryNotifications()}else alert('通知は許可されませんでした')}
 load();renderAll();checkAnniversaryNotifications();
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});

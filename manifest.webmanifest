@@ -1,10 +1,10 @@
 {
-  "name": "REPTILE QUEST",
-  "short_name": "ReptileQuest",
+  "name": "REPTILE NOTE",
+  "short_name": "ReptileNote",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0b1020",
   "theme_color": "#111827",
-  "description": "爬虫類の飼育記録・健康管理アプリ",
+  "description": "REPTILE NOTE - 爬虫類の飼育記録・健康管理アプリ",
   "icons": []
 }
