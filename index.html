@@ -167,6 +167,7 @@ select optgroup{background:#17243a;color:#b8f36b;font-weight:700}
 <dialog id="hospitalEditDialog"><button class="close" onclick="closeDialog('hospitalEditDialog')">×</button><h2>病院情報を編集</h2><form id="hospitalForm"><label class="field">病院名</label><input id="hospitalName"><label class="field">電話番号</label><input id="hospitalPhone" type="tel"><label class="field">住所</label><textarea id="hospitalAddress"></textarea><label class="field">診療時間・休診日</label><textarea id="hospitalHours"></textarea><label class="field">Webサイト</label><input id="hospitalUrl" type="url" placeholder="https://"><label class="field">メモ</label><textarea id="hospitalNotes"></textarea><button class="btn primary full">保存</button></form></dialog>
 <script>
 const KEY='reptileQuestData_v1';
+const GUEST_API_URL='https://eeimbuthmzecafbqialz.supabase.co/functions/v1/guest-api';
 let db={pets:[],records:[],events:[],galleryPhotos:[]};let monthCursor=new Date();let selectedPhoto=null,selectedRecordPhoto=null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -199,16 +200,14 @@ function openSettingDetail(kind){
  if(kind==='notifications')html=`<div class="card"><p>誕生日やお迎え記念日などのお知らせを管理します。</p><button class="btn primary full" onclick="enableNotifications()">通知の許可を確認する</button><p class="small">通知は対応ブラウザでアプリを開いた際に予定を確認する方式です。アプリを閉じている間の通知は今後対応予定です。</p><p>現在の許可状態：<b>${('Notification' in window)?Notification.permission:'このブラウザは非対応'}</b></p></div>`;
  if(kind==='data')html=`<div class="notice">データはこのブラウザ内に保存されます。端末故障やブラウザのデータ消去に備えて、定期的にバックアップしてください。</div><button class="btn full" onclick="exportData()">⬇ データをバックアップ</button><label class="field" style="margin-top:14px">バックアップから復元</label><input type="file" id="importFile" accept="application/json"><button class="btn full" onclick="importData()">⬆ バックアップを復元</button><button class="btn danger full" style="margin-top:12px" onclick="clearData()">すべてのデータを削除</button>`;
  if(kind==='display')html=`<div class="card"><p>ライトモード（白）・ダークモードの切り替えは今後対応予定です。</p></div>`;
- if(kind==='participants')html=`<div class="notice">この機能はSupabaseの共有APIに接続します。オーナーのセッショントークンはこのタブを閉じるまでの間だけ保持し、アプリのバックアップには含めません。</div><label class="field">guest-api のURL</label><input id="participantApiUrl" type="url" placeholder="https://プロジェクトID.supabase.co/functions/v1/guest-api" value="${esc(db.participantApiUrl||'')}"><label class="field">オーナーのセッショントークン</label><input id="participantOwnerToken" type="password" autocomplete="off" placeholder="create_workspace で発行されたトークン"><button class="btn primary full" onclick="loadParticipants()">参加者一覧を読み込む</button><div id="participantStatus" class="small" style="margin-top:10px"></div><div id="participantList"></div><button class="btn ghost full" style="margin-top:12px" onclick="clearParticipantToken()">このタブのトークンを消去</button>`;
+ if(kind==='participants')html=`<div class="notice">共有サーバーへの接続先はアプリに設定済みです。ここにはオーナーのセッショントークンだけを入力してください。トークンはこのタブを閉じるまで保持し、バックアップには含めません。</div><label class="field">オーナーのセッショントークン</label><input id="participantOwnerToken" type="password" autocomplete="off" placeholder="オーナー用のセッショントークン"><button class="btn primary full" onclick="loadParticipants()">参加者一覧を読み込む</button><div id="participantStatus" class="small" style="margin-top:10px"></div><div id="participantList"></div><button class="btn ghost full" style="margin-top:12px" onclick="clearParticipantToken()">このタブのトークンを消去</button>`;
  $('settingDetailBody').innerHTML=html;if(kind==='participants')$('participantOwnerToken').value=sessionStorage.getItem('reptileNoteOwnerSessionToken')||'';closeDialog('settingsDialog');$('settingDetailDialog').showModal();
 }
 async function loadParticipants(){
- const url=$('participantApiUrl')?.value.trim();
+ const url=GUEST_API_URL;
  const token=$('participantOwnerToken')?.value.trim();
  const status=$('participantStatus'),list=$('participantList');
- if(!url||!/^https:\/\//i.test(url)){status.textContent='guest-api のURLを https:// から入力してください。';return}
  if(!token){status.textContent='オーナーのセッショントークンを入力してください。';return}
- db.participantApiUrl=url;localStorage.setItem(KEY,JSON.stringify(db));
  sessionStorage.setItem('reptileNoteOwnerSessionToken',token);
  status.textContent='読み込み中…';list.innerHTML='';
  try{
