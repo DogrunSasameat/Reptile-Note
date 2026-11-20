@@ -144,6 +144,13 @@ h2{font-size:15px;font-weight:650;letter-spacing:.01em}
 .btn{font-weight:600}
 @media(max-width:420px){.stat strong{font-size:19px}.stat{padding:12px 10px}}
 
+
+/* Home status tiles: center all text consistently */
+.stat{ text-align:center; }
+.stat label{ text-align:center; width:100%; }
+.stat strong{ justify-content:center; text-align:center; width:100%; }
+.stat small{ display:block; text-align:center; width:100%; }
+.stat.stat-tap{ text-align:center; }
 </style>
 </head>
 <body>
@@ -248,7 +255,7 @@ async function createShareLink(){
   const response=await fetch(GUEST_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'create_share_link',token,permission,expiresInDays,maxUses})});
   const data=await response.json();
   if(!response.ok||data.status!=='ok')throw new Error(data.error||`HTTP ${response.status}`);
-  const shareToken=data.shareToken||data.share_token||data.token;
+  const shareToken=data.shareToken||data.share_token||data.token||data.shareLink?.token||data.share_link?.token;
   if(!shareToken)throw new Error('発行結果に共有トークンがありません。');
   const shareUrl=new URL(location.href);shareUrl.search='';shareUrl.hash='';shareUrl.searchParams.set('share',shareToken);
   status.textContent='共有リンクを発行しました。このリンクは必要な相手にだけ送ってください。';
