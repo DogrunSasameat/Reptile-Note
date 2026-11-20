@@ -131,6 +131,19 @@ select optgroup{background:#17243a;color:#b8f36b;font-weight:700}
 .pet-date-grid .date-input-wrap,.pet-date-grid .date-display{width:100%;min-width:0}
 .pet-date-grid .date-display{font-size:14px!important;letter-spacing:0;padding-left:10px!important;padding-right:42px!important}
 @media(max-width:390px){.pet-date-grid{grid-template-columns:minmax(72px,.65fr) minmax(165px,1.35fr);gap:7px}}
+
+/* Home dashboard typography refinement */
+h1{font-size:21px;font-weight:650;letter-spacing:.01em}
+h2{font-size:15px;font-weight:650;letter-spacing:.01em}
+.stat{padding:13px 12px;background:linear-gradient(145deg,#111b2d,#0e1728)}
+.stat label{font-size:10px;font-weight:500;letter-spacing:.045em;color:#aab7c9}
+.stat strong{font-size:20px;font-weight:600;letter-spacing:0;line-height:1.3;margin:6px 0 5px;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:2px;flex-wrap:wrap}
+.stat small{font-size:10px;font-weight:400;line-height:1.45;color:#91a1b8}
+.stat .unit{font-size:.68em;font-weight:500;letter-spacing:0;line-height:1;white-space:nowrap;color:#c3cfdd;margin-left:2px}
+.pet-tab{font-weight:600}
+.btn{font-weight:600}
+@media(max-width:420px){.stat strong{font-size:19px}.stat{padding:12px 10px}}
+
 </style>
 </head>
 <body>
@@ -161,7 +174,8 @@ select optgroup{background:#17243a;color:#b8f36b;font-weight:700}
 <button class="settings-row" onclick="openSettingDetail('data')"><span>💾 <b>データ管理</b><small>バックアップ・復元</small></span><strong>›</strong></button>
 <button class="settings-row" onclick="openSettingDetail('display')"><span>🎨 <b>表示設定</b><small>テーマなどの表示方法</small></span><strong>›</strong></button>
 <button class="settings-row" onclick="openSettingDetail('participants')"><span>👥 <b>共有・参加者管理</b><small>共有ノートの参加者を確認</small></span><strong>›</strong></button>
-<p class="small" style="margin-top:16px">REPTILE NOTE prototype 0.4.21</p></dialog>
+<p class="small" style="margin-top:16px">REPTILE NOTE prototype 0.4.23</p></dialog>
+<dialog id="guestJoinDialog"><button class="close" onclick="closeGuestJoinDialog()">×</button><h2>🔗 共有ノートに参加</h2><p class="small">招待リンクから共有ノートに参加します。表示するニックネームを入力してください。</p><label class="field" for="guestJoinName">ニックネーム</label><input id="guestJoinName" maxlength="40" autocomplete="nickname" placeholder="例：ゲスト" required><div id="guestJoinStatus" class="small" role="status" style="margin:8px 0 12px"></div><button id="guestJoinButton" class="btn primary full" onclick="joinSharedWorkspace()">このノートに参加する</button></dialog>
 <dialog id="settingDetailDialog"><button class="close" onclick="closeDialog('settingDetailDialog')">×</button><button class="btn ghost" onclick="closeDialog('settingDetailDialog');openSettings()">← 設定に戻る</button><h2 id="settingDetailTitle" style="margin-top:14px"></h2><div id="settingDetailBody"></div></dialog>
 <dialog id="ownerEditDialog"><button class="close" onclick="closeDialog('ownerEditDialog')">×</button><h2>飼い主情報を編集</h2><form id="ownerForm"><label class="field">ニックネーム</label><input id="ownerNickname" placeholder="アプリ内で表示する名前"><label class="field">年齢</label><input id="ownerAge" type="number" min="0" max="120" placeholder="例：26"><label class="field">性別</label><select id="ownerGender"><option value="">未設定</option><option>女性</option><option>男性</option><option>その他</option><option>回答しない</option></select><label class="field">SNS</label><textarea id="ownerSns" placeholder="Instagram・XなどのアカウントやURL"></textarea><button class="btn primary full">保存</button></form></dialog>
 <dialog id="hospitalEditDialog"><button class="close" onclick="closeDialog('hospitalEditDialog')">×</button><h2>病院情報を編集</h2><form id="hospitalForm"><label class="field">病院名</label><input id="hospitalName"><label class="field">電話番号</label><input id="hospitalPhone" type="tel"><label class="field">住所</label><textarea id="hospitalAddress"></textarea><label class="field">診療時間・休診日</label><textarea id="hospitalHours"></textarea><label class="field">Webサイト</label><input id="hospitalUrl" type="url" placeholder="https://"><label class="field">メモ</label><textarea id="hospitalNotes"></textarea><button class="btn primary full">保存</button></form></dialog>
@@ -243,6 +257,49 @@ async function createShareLink(){
  }catch(error){status.textContent=`発行できませんでした：${error.message}`;}
 }
 async function copyIssuedShareUrl(){const field=$('issuedShareUrl');if(!field)return;field.select();try{await navigator.clipboard.writeText(field.value);alert('共有URLをコピーしました。')}catch(e){document.execCommand('copy');alert('共有URLをコピーしました。')}}
+let pendingShareToken='';
+function checkShareInvite(){
+ const params=new URLSearchParams(location.search);
+ const share=params.get('share');
+ if(!share)return;
+ if(share.length<40||share.length>200){history.replaceState({},'',location.pathname);alert('共有リンクが正しくありません。発行元に新しいリンクを依頼してください。');return;}
+ pendingShareToken=share;
+ history.replaceState({},'',location.pathname);
+ const remembered=sessionStorage.getItem('reptileNoteGuestDisplayName')||'';
+ $('guestJoinName').value=remembered;
+ $('guestJoinStatus').textContent='招待リンクを確認しました。';
+ if(!$('guestJoinDialog').open)$('guestJoinDialog').showModal();
+}
+function closeGuestJoinDialog(){
+ if($('guestJoinDialog').open)$('guestJoinDialog').close();
+}
+async function joinSharedWorkspace(){
+ const name=$('guestJoinName').value.trim();
+ const status=$('guestJoinStatus');
+ const button=$('guestJoinButton');
+ if(!pendingShareToken){status.textContent='共有リンクが見つかりません。招待URLをもう一度開いてください。';return;}
+ if(!name||name.length>40){status.textContent='ニックネームを1〜40文字で入力してください。';return;}
+ button.disabled=true;status.textContent='参加処理中…';
+ try{
+  const response=await fetch(GUEST_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'join_workspace',shareToken:pendingShareToken,displayName:name})});
+  const data=await response.json();
+  if(!response.ok||data.status!=='ok')throw new Error(data.error||`HTTP ${response.status}`);
+  const guestToken=data.sessionToken||data.token;
+  if(!guestToken)throw new Error('参加セッショントークンが返されませんでした。');
+  sessionStorage.setItem('reptileNoteGuestSessionToken',guestToken);
+  sessionStorage.setItem('reptileNoteGuestWorkspaceId',data.workspaceId||data.workspace_id||data.workspace?.id||'');
+  sessionStorage.setItem('reptileNoteGuestRole',data.role||'viewer');
+  sessionStorage.setItem('reptileNoteGuestDisplayName',data.displayName||name);
+  pendingShareToken='';
+  history.replaceState({},'',location.pathname);
+  status.textContent=`参加しました。${data.workspaceName||data.workspace?.name||'共有ノート'} に ${data.displayName||name} として参加しています。`;
+  button.textContent='参加しました';
+  button.disabled=true;
+  const note=document.createElement('p');note.className='notice';note.textContent='参加登録は完了しました。共有ノートの飼育データを表示・同期する機能は次の段階で接続します。';
+  $('guestJoinDialog').appendChild(note);
+  const close=document.createElement('button');close.className='btn full';close.textContent='閉じる';close.onclick=()=>closeGuestJoinDialog();$('guestJoinDialog').appendChild(close);
+ }catch(error){status.textContent=`参加できませんでした：${error.message}`;button.disabled=false;}
+}
 function clearParticipantToken(){sessionStorage.removeItem('reptileNoteOwnerSessionToken');if($('participantOwnerToken'))$('participantOwnerToken').value='';if($('participantStatus'))$('participantStatus').textContent='このタブのトークンを消去しました。';if($('participantList'))$('participantList').innerHTML='';}
 function editOwner(){const x=db.owner||{};$('ownerNickname').value=x.nickname||x.name||'';$('ownerAge').value=x.age||'';$('ownerGender').value=x.gender||'';$('ownerSns').value=x.sns||'';$('ownerEditDialog').showModal()}
 function editHospital(){const x=db.hospital||{};['Name','Phone','Address','Hours','Url','Notes'].forEach(k=>{const id='hospital'+k;$(id).value=x[k.toLowerCase()]||''});$('hospitalEditDialog').showModal()}
@@ -416,8 +473,8 @@ function renderHome(){
   ${stat('food','ご飯',esc(feeding.main),feeding.sub,'🍽️','給餌')}
   ${stat('shed','脱皮',esc(shedding.main),shedding.sub,'🐍','脱皮')}
   ${stat('waste','排泄',esc(wasteSummary.main),wasteSummary.sub,'🚽','排泄')}
-  ${stat('temperature','温度',hot!==''||cool!==''?`${hot!==''?esc(hot):'--'} / ${cool!==''?esc(cool):'--'} ℃`:'--',temperatureSub,'🌡️','温度')}
-  ${stat('humidity','湿度',hf!==''&&hf!=null?esc(hf)+' %':'--',humiditySub,'💧','湿度')}
+  ${stat('temperature','温度',hot!==''||cool!==''?`${hot!==''?esc(hot):'--'} / ${cool!==''?esc(cool):'--'}<span class="unit">℃</span>`:'--',temperatureSub,'🌡️','温度')}
+  ${stat('humidity','湿度',hf!==''&&hf!=null?esc(hf)+'<span class="unit">%</span>':'--',humiditySub,'💧','湿度')}
   ${stat('cleaning','お掃除',esc(cleaningSummary.main),cleaningSummary.sub,'🧹','お掃除')}
   ${stat('other','その他',`${otherCount}件`,'健康・通院／メモなど','📌','その他')}
   </div></div></div>`
@@ -468,7 +525,7 @@ function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'app
 function importData(){const f=$('importFile').files[0];if(!f){alert('バックアップファイルを選択してください');return}const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x.pets)||!Array.isArray(x.records)||!Array.isArray(x.events))throw 0;if(confirm('現在のデータを置き換えて復元しますか？')){db=x;save();closeDialog('settingsDialog');alert('復元しました')}}catch(e){alert('ファイル形式が正しくありません')}};r.readAsText(f)}
 function clearData(){if(confirm('すべての個体・記録・予定を削除します。よろしいですか？')){db={pets:[],records:[],events:[],galleryPhotos:[],owner:{},hospital:{}};save();closeDialog('settingsDialog')}}
 async function enableNotifications(){if(!('Notification'in window)){alert('このブラウザは通知に対応していません');return}const p=await Notification.requestPermission();if(p==='granted'){alert('通知を許可しました。アプリを開いた際に今日・明日の誕生日とお迎え記念日をお知らせします。');checkAnniversaryNotifications()}else alert('通知は許可されませんでした')}
-load();renderAll();checkAnniversaryNotifications();
+load();renderAll();checkAnniversaryNotifications();checkShareInvite();
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
 function enhanceNumberSteppers(root=document){
