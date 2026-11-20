@@ -522,7 +522,9 @@ async function bootstrapCloudSync(){
    }
   }
   await loadSharedPetsFromCloud(false);
+  await loadSharedPhotosFromCloud();
   localStorage.setItem(KEY,JSON.stringify(db));
+  renderAll();
   updateCloudSyncStatus('同期済み · 最新データを読み込みました');
   return true;
  }catch(error){console.error('Cloud bootstrap failed:',error);updateCloudSyncStatus(`同期できませんでした：${error.message}`);return false;}
@@ -781,7 +783,10 @@ async function loadSharedPhotosFromCloud(){
  const token=activeSharedToken();if(!token)return false;
  const data=await guestApi({action:'list_photos',token});
  const rows=Array.isArray(data.photos)?data.photos:[];
- db.galleryPhotos=rows.map(row=>({id:row.id,petId:row.pet_id||'',date:row.taken_at?String(row.taken_at).slice(0,10):'',title:row.title||'',notes:row.memo||'',photo:row.url,visibility:row.visibility,storagePath:row.storage_path,cloud:true}));
+ const remote=rows.map(row=>({id:row.id,petId:row.pet_id||'',date:row.taken_at?String(row.taken_at).slice(0,10):'',title:row.title||'',notes:row.memo||'',photo:row.url,visibility:row.visibility,storagePath:row.storage_path,cloud:true}));
+ const remoteIds=new Set(remote.map(x=>x.id));
+ const localOnly=(db.galleryPhotos||[]).filter(x=>!x.cloud&&!remoteIds.has(x.id));
+ db.galleryPhotos=[...remote,...localOnly];
  return true;
 }
 async function changePhotoVisibility(id,visibility){
