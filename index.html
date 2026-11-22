@@ -185,7 +185,7 @@ h2{font-size:15px;font-weight:650;letter-spacing:.01em}
 <button class="settings-row" onclick="openSettingDetail('data')"><span>💾 <b>データ管理</b><small>バックアップ・復元</small></span><strong>›</strong></button>
 <button class="settings-row" onclick="openSettingDetail('display')"><span>🎨 <b>表示設定</b><small>テーマなどの表示方法</small></span><strong>›</strong></button>
 <button class="settings-row" onclick="openSettingDetail('participants')"><span>👥 <b>共有・参加者管理</b><small>共有ノートの参加者を確認</small></span><strong>›</strong></button>
-<p class="small" style="margin-top:16px">REPTILE NOTE prototype 0.4.37</p></dialog>
+<p class="small" style="margin-top:16px">REPTILE NOTE prototype 0.4.41</p></dialog>
 <dialog id="firstSetupDialog" class="first-setup-dialog"><div class="first-setup-mark">🐍</div><h2>REPTILE NOTEへようこそ</h2><p class="small">新しい飼育ノートを作成します。最初は空の状態から始まり、個体や記録はあとから自由に追加できます。</p><form id="firstSetupForm"><label class="field" for="firstSetupName">ノート名</label><input id="firstSetupName" maxlength="80" required placeholder="例：わが家の飼育ノート" value="わが家の飼育ノート"><div id="firstSetupStatus" class="small" role="status" style="margin:10px 0"></div><button id="firstSetupButton" class="btn primary full" type="submit">新しい飼育ノートを作成</button></form><p class="small" style="margin-top:12px">作成すると、このブラウザにオーナー用のアクセス情報を保存します。共有リンクを知っている人は、そのノートに参加できます。</p></dialog>
 <dialog id="guestJoinDialog"><button class="close" onclick="closeGuestJoinDialog()">×</button><h2>🔗 共有ノートに参加</h2><p class="small">招待リンクから共有ノートに参加します。表示するニックネームを入力してください。</p><label class="field" for="guestJoinName">ニックネーム</label><input id="guestJoinName" maxlength="40" autocomplete="nickname" placeholder="例：ゲスト" required><div id="guestJoinStatus" class="small" role="status" style="margin:8px 0 12px"></div><button id="guestJoinButton" class="btn primary full" onclick="joinSharedWorkspace()">このノートに参加する</button></dialog>
 <dialog id="settingDetailDialog"><button class="close" onclick="closeDialog('settingDetailDialog')">×</button><button class="btn ghost" onclick="closeDialog('settingDetailDialog');openSettings()">← 設定に戻る</button><h2 id="settingDetailTitle" style="margin-top:14px"></h2><div id="settingDetailBody"></div></dialog>
@@ -193,6 +193,10 @@ h2{font-size:15px;font-weight:650;letter-spacing:.01em}
 <dialog id="hospitalEditDialog"><button class="close" onclick="closeDialog('hospitalEditDialog')">×</button><h2>病院情報を編集</h2><form id="hospitalForm"><label class="field">病院名</label><input id="hospitalName"><label class="field">電話番号</label><input id="hospitalPhone" type="tel"><label class="field">住所</label><textarea id="hospitalAddress"></textarea><label class="field">診療時間・休診日</label><textarea id="hospitalHours"></textarea><label class="field">Webサイト</label><input id="hospitalUrl" type="url" placeholder="https://"><label class="field">メモ</label><textarea id="hospitalNotes"></textarea><button class="btn primary full">保存</button></form></dialog>
 <script>
 const KEY='reptileQuestData_v1';
+const PHOTO_DB_NAME='reptileNotePhotoStore';
+const PHOTO_DB_VERSION=1;
+const PHOTO_SELECTION_PREFIX='reptileNoteView:';
+let photoDbPromise=null;let saveQueue=Promise.resolve();
 const GUEST_API_URL='https://eeimbuthmzecafbqialz.supabase.co/functions/v1/guest-api';
 const OWNER_TOKEN_KEY='reptileNoteOwnerToken_v1';
 const OWNER_WORKSPACE_KEY='reptileNoteOwnerWorkspace_v1';
@@ -250,10 +254,29 @@ function load(){
  }catch(e){console.error('REPTILE NOTE data load error',e)}
  // 初回起動時は空のノートで開始します。既存のlocalStorageデータはそのまま読み込みます。
 }
-function save(){if(!guestSessionActive())localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function openPhotoDb(){
+ if(!('indexedDB' in window))return Promise.reject(new Error('このブラウザは写真の分離保存に対応していません'));
+ if(!photoDbPromise)photoDbPromise=new Promise((resolve,reject)=>{const req=indexedDB.open(PHOTO_DB_NAME,PHOTO_DB_VERSION);req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains('photos'))d.createObjectStore('photos')};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('写真保存領域を開けません'))});
+ return photoDbPromise;
+}
+function photoStoreRequest(mode,action,key,value){return openPhotoDb().then(d=>new Promise((resolve,reject)=>{const tx=d.transaction('photos',mode);const store=tx.objectStore('photos');let req;try{req=action==='put'?store.put(value,key):store.get(key)}catch(e){reject(e);return}req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('写真データの保存に失敗しました'));tx.onabort=()=>reject(tx.error||new Error('写真データの保存に失敗しました'))}))}
+function photoEntries(){const out=[];for(const p of db.pets||[])if(p.photo?.startsWith('data:'))out.push([`pet:${p.id}`,p,'photo']);for(const r of db.records||[])if(r.photo?.startsWith('data:'))out.push([`record:${r.id}`,r,'photo']);for(const g of db.galleryPhotos||[])if(g.photo?.startsWith('data:'))out.push([`gallery:${g.id}`,g,'photo']);return out}
+async function persistPhotosAndData(){
+ const entries=photoEntries();
+ for(const [key,obj,field] of entries){await photoStoreRequest('readwrite','put',key,obj[field]);obj.photoRef=key;}
+ if(!guestSessionActive()){
+  const clean=JSON.parse(JSON.stringify(db));
+  for(const group of ['pets','records','galleryPhotos'])for(const item of clean[group]||[])if(item.photo?.startsWith('data:')){item.photoRef=item.photoRef||`${group==='pets'?'pet':group==='records'?'record':'gallery'}:${item.id}`;delete item.photo;}
+  localStorage.setItem(KEY,JSON.stringify(clean));
+ }
+}
+async function hydratePhotoData(){
+ for(const group of ['pets','records','galleryPhotos'])for(const item of db[group]||[]){if(item.photoRef&&!item.photo){try{item.photo=await photoStoreRequest('readonly','get',item.photoRef)}catch(e){console.warn('photo hydrate failed',item.photoRef,e)}}}
+}
+function save(){saveQueue=saveQueue.then(()=>persistPhotosAndData()).catch(error=>{console.error('save failed',error);if(!guestSessionActive())try{const clean=JSON.parse(JSON.stringify(db));for(const group of ['pets','records','galleryPhotos'])for(const item of clean[group]||[])if(item.photo?.startsWith('data:'))delete item.photo;localStorage.setItem(KEY,JSON.stringify(clean))}catch(e){console.error('metadata save failed',e)}});renderAll();return saveQueue;}
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.screen===id));renderAll()}
 function petTabMarkup(key,selected,handler){return `<button type="button" class="pet-tab ${selected==='all'?'active':''}" role="tab" aria-selected="${selected==='all'}" onclick="${handler}('all');return false">すべて</button>`+db.pets.map(p=>`<button type="button" class="pet-tab ${p.id===selected?'active':''}" role="tab" aria-selected="${p.id===selected}" onclick="${handler}('${p.id}');return false">${esc(p.name)}</button>`).join('')}
-function setPetView(key,id,render){db[key]=id;localStorage.setItem(KEY,JSON.stringify(db));render()}
+function setPetView(key,id,render){db[key]=id;try{localStorage.setItem(PHOTO_SELECTION_PREFIX+key,id)}catch(e){}render()}
 function selectEnvironmentPet(id){setPetView('environmentSelectedPetId',id,renderEnvironment)}
 function selectCalendarPet(id){setPetView('calendarSelectedPetId',id,renderCalendar)}
 function selectAlbumPet(id){setPetView('albumSelectedPetId',id,renderAlbum)}
@@ -694,7 +717,7 @@ function daysTogether(arrival){
 const HOME_TILES=[['age','年齢'],['arrival','お迎えからの日数'],['measurement','測定'],['food','ご飯'],['shed','脱皮'],['waste','排泄'],['temperature','温度'],['humidity','湿度'],['cleaning','お掃除'],['other','その他']];
 function openTileSettings(){if(!db.homeTileVisibility)db.homeTileVisibility={};$('tileSwitches').innerHTML=HOME_TILES.map(([key,label])=>`<div class="switch-row"><span>${label}</span><label class="switch"><input type="checkbox" ${db.homeTileVisibility[key]!==false?'checked':''} onchange="setHomeTile('${key}',this.checked)"><span class="switch-track"></span></label></div>`).join('');$('tileDialog').showModal()}
 function setHomeTile(key,visible){if(!db.homeTileVisibility)db.homeTileVisibility={};db.homeTileVisibility[key]=visible;localStorage.setItem(KEY,JSON.stringify(db));renderHome()}
-function selectHomePet(id){if(!db.pets.some(p=>p.id===id))return;db.homeSelectedPetId=id;localStorage.setItem(KEY,JSON.stringify(db));renderHome();}
+function selectHomePet(id){if(!db.pets.some(p=>p.id===id))return;db.homeSelectedPetId=id;try{localStorage.setItem(PHOTO_SELECTION_PREFIX+'homeSelectedPetId',id)}catch(e){}renderHome();}
 function renderHome(){
  const el=$('homePets'),tabs=$('homePetTabs');
  if(!db.pets.length){tabs.innerHTML='';el.innerHTML='<div class="empty">まだ個体がいません。「個体追加」から登録してください。</div>';return}
@@ -855,7 +878,7 @@ function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'app
 function importData(){const f=$('importFile').files[0];if(!f){alert('バックアップファイルを選択してください');return}const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x.pets)||!Array.isArray(x.records)||!Array.isArray(x.events))throw 0;if(confirm('現在のデータを置き換えて復元しますか？')){db=x;save();closeDialog('settingsDialog');alert('復元しました')}}catch(e){alert('ファイル形式が正しくありません')}};r.readAsText(f)}
 function clearData(){if(confirm('すべての個体・記録・予定を削除します。よろしいですか？')){db={pets:[],records:[],events:[],galleryPhotos:[],owner:{},hospital:{}};save();closeDialog('settingsDialog')}}
 async function enableNotifications(){if(!('Notification'in window)){alert('このブラウザは通知に対応していません');return}const p=await Notification.requestPermission();if(p==='granted'){alert('通知を許可しました。アプリを開いた際に今日・明日の誕生日とお迎え記念日をお知らせします。');checkAnniversaryNotifications()}else alert('通知は許可されませんでした')}
-load();renderAll();checkAnniversaryNotifications();checkShareInvite();if(guestSessionToken()||localStorage.getItem(OWNER_TOKEN_KEY)||sessionStorage.getItem('reptileNoteOwnerSessionToken'))bootstrapCloudSync().then(()=>renderAll());else maybeShowFirstSetup();
+load();for(const key of ['homeSelectedPetId','environmentSelectedPetId','calendarSelectedPetId','albumSelectedPetId']){try{const v=localStorage.getItem(PHOTO_SELECTION_PREFIX+key);if(v)db[key]=v}catch(e){}}hydratePhotoData().then(()=>persistPhotosAndData()).catch(error=>console.warn('photo migration pending',error)).finally(()=>renderAll());checkAnniversaryNotifications();checkShareInvite();if(guestSessionToken()||localStorage.getItem(OWNER_TOKEN_KEY)||sessionStorage.getItem('reptileNoteOwnerSessionToken'))bootstrapCloudSync().then(()=>renderAll());else maybeShowFirstSetup();
 if('serviceWorker'in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
 function enhanceNumberSteppers(root=document){
